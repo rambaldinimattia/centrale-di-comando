@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(node -e \"console.log\\('next', require\\('./node_modules/next/package.json'\\).version\\)\")",
+      "Bash(node \"C:/Users/Matti/AppData/Local/Temp/claude/C--Users-Matti-OneDrive-Desktop-CLAUDE-CODE-SENTINELLA--CdC--v2-0/ee7164f2-40c9-4b31-9278-5c1421e0cf83/scratchpad/gen-icons.mjs\" \"C:/Users/Matti/OneDrive/Desktop/CLAUDE CODE/SENTINELLA \\(CdC\\) v2.0/public\")",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:3000/manifest.webmanifest)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/login)",
+      "Bash(curl -s -o /dev/null -w \"icon-192 %{http_code} %{size_download}b\" http://localhost:3000/icon-192.png)",
+      "Bash(node scripts/genera-hash.mjs \"esempio-password-123\")",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(git add *)",
+      "Bash(grep -E \"node_modules|\\\\.next|\\\\.env\\\\.local$\")",
+      "Bash(git commit -q -m ' *)",
+      "Bash(xargs echo \"commit totali:\")"
+    ]
+  }
+}

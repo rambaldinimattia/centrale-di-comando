@@ -1,0 +1,8 @@
+# Normalizza i fine-riga: LF nel repo, checkout nativo per piattaforma
+* text=auto eol=lf
+
+# File binari: nessuna conversione
+*.png binary
+*.ico binary
+*.woff binary
+*.woff2 binary

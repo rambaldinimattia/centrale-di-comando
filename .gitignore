@@ -1,0 +1,20 @@
+# dipendenze
+/node_modules
+
+# build Next.js
+/.next
+/out
+
+# ambiente
+.env
+.env.local
+.env*.local
+
+# credenziali service account (MAI committare)
+*service-account*.json
+google-key*.json
+
+# sistema
+.DS_Store
+Thumbs.db
+*.log
