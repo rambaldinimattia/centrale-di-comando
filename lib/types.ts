@@ -79,7 +79,7 @@ export interface ClienteDerivato {
   // Dettaglio campagne
   campagneAttive: number | null;
   campagneProblemi: number | null;
-  storico7gg: PuntoStorico[];
+  storico: PuntoStorico[]; // serie giornaliera, fino a 30 giorni (asc)
 }
 
 export interface AlertFeedItem {

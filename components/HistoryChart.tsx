@@ -26,6 +26,10 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
   const slot = innerW / n;
   const barW = Math.min(slot * 0.5, 46);
 
+  // Con molti giorni (30) evito il testo su ogni barra e dirado le etichette X
+  const mostraValoriBarre = n <= 8;
+  const passoEtichetteX = n <= 8 ? 1 : n <= 16 ? 2 : 5;
+
   const leadMax = Math.max(1, ...dati.map((d) => d.lead));
   const spesaMax = Math.max(1, ...dati.map((d) => d.spesa));
 
@@ -47,7 +51,7 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
         role="img"
-        aria-label="Andamento lead e spesa negli ultimi 7 giorni"
+        aria-label={`Andamento lead e spesa negli ultimi ${n} giorni`}
         style={{ display: "block", minWidth: 360 }}
       >
         {/* Linee guida orizzontali */}
@@ -76,7 +80,7 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
               <rect x={x} y={y} width={barW} height={Math.max(0, h)} fill="#5C1A28">
                 <title>{`${formatGiornoBreve(d.giorno)} · ${formatNumero(d.lead)} lead`}</title>
               </rect>
-              {d.lead > 0 && (
+              {mostraValoriBarre && d.lead > 0 && (
                 <text
                   x={xCenter(i)}
                   y={y - 6}
@@ -110,20 +114,24 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
           </g>
         ))}
 
-        {/* Etichette asse X */}
-        {dati.map((d, i) => (
-          <text
-            key={`x-${i}`}
-            x={xCenter(i)}
-            y={H - 12}
-            textAnchor="middle"
-            fontSize={11}
-            fill="#8A7E6D"
-            fontFamily="var(--font-jost), sans-serif"
-          >
-            {formatGiornoBreve(d.giorno)}
-          </text>
-        ))}
+        {/* Etichette asse X (diradate quando i giorni sono molti) */}
+        {dati.map((d, i) => {
+          const mostra = i % passoEtichetteX === 0 || i === n - 1;
+          if (!mostra) return null;
+          return (
+            <text
+              key={`x-${i}`}
+              x={xCenter(i)}
+              y={H - 12}
+              textAnchor="middle"
+              fontSize={11}
+              fill="#8A7E6D"
+              fontFamily="var(--font-jost), sans-serif"
+            >
+              {formatGiornoBreve(d.giorno)}
+            </text>
+          );
+        })}
       </svg>
 
       {/* Legenda */}

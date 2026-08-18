@@ -140,10 +140,10 @@ export function deriveDashboard(
         checkPeggiore;
     }
 
-    // Storico 7 giorni (serve anche al calcolo del CPL di periodo)
-    const storico7gg = buildStorico(righe);
+    // Storico giornaliero (fino a 30 giorni) per grafico e aggregazioni
+    const storico = buildStorico(righe);
 
-    // Mini-stat "ieri" dall'ultima esecuzione
+    // Mini-stat "ieri" (ultime 24h) dall'ultima esecuzione
     const spesaIeri = parseNum(
       righeUltima.find((r) => r.check === "spesa_giorno")?.valore
     );
@@ -151,15 +151,12 @@ export function deriveDashboard(
       righeUltima.find((r) => r.check === "volume_lead")?.valore
     );
 
-    // CPL "periodo": priorità al check `cpl` se la Sentinella lo scrive;
-    // altrimenti calcolo sui 7 giorni (spesa totale ÷ lead totali), così il
-    // dato si popola anche quando ieri i lead erano 0 ma nel periodo no.
+    // CPL 24h: priorità al check `cpl` se presente; altrimenti spesa÷lead di ieri
+    // (le aggregazioni 7g/30g sono calcolate lato UI dal selettore di periodo).
     const cplRiga = righeUltima.find((r) => r.check === "cpl");
     let cpl = parseNum(cplRiga?.valore);
-    if (cpl == null) {
-      const totSpesa = storico7gg.reduce((s, p) => s + p.spesa, 0);
-      const totLead = storico7gg.reduce((s, p) => s + p.lead, 0);
-      if (totLead > 0) cpl = totSpesa / totLead;
+    if (cpl == null && spesaIeri != null && leadIeri && leadIeri > 0) {
+      cpl = spesaIeri / leadIeri;
     }
 
     // Campagne
@@ -181,7 +178,7 @@ export function deriveDashboard(
       cpl,
       campagneAttive: camp.attive,
       campagneProblemi: camp.problemi,
-      storico7gg,
+      storico,
     });
   }
 
@@ -237,7 +234,8 @@ export function deriveDashboard(
   };
 }
 
-// Costruisce la serie degli ultimi 7 giorni (per giorno: lead + spesa)
+// Costruisce la serie giornaliera (per giorno: lead + spesa), fino a 30 giorni.
+// Il selettore di periodo nella UI ne prende poi la fetta 24h/7g/30g.
 function buildStorico(righe: RigaLog[]): PuntoStorico[] {
   const perGiorno = new Map<string, { lead: number | null; spesa: number | null }>();
 
@@ -251,9 +249,9 @@ function buildStorico(righe: RigaLog[]): PuntoStorico[] {
   }
 
   const giorni = Array.from(perGiorno.keys()).sort(); // asc
-  const ultimi7 = giorni.slice(-7);
+  const ultimi30 = giorni.slice(-30);
 
-  return ultimi7.map((g) => {
+  return ultimi30.map((g) => {
     const s = perGiorno.get(g)!;
     return { giorno: g, lead: s.lead ?? 0, spesa: s.spesa ?? 0 };
   });
