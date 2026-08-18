@@ -60,8 +60,9 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
         />
         <MetricCard
           label="CPL periodo"
-          valore={cliente.cpl != null ? formatEuro(cliente.cpl) : "—"}
-          sotto="Costo per lead"
+          valore={cliente.cpl != null ? formatEuro(cliente.cpl) : "n/d"}
+          sotto={cliente.cpl != null ? "Media 7 giorni" : "Nessun lead nel periodo"}
+          na={cliente.cpl == null}
         />
         <MetricCard
           label="Campagne"
@@ -72,10 +73,15 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
                     ? ` / ${cliente.campagneProblemi}`
                     : ""
                 }`
-              : "—"
+              : "non monitorato"
           }
-          sotto="Attive / con problemi"
+          sotto={
+            cliente.campagneAttive != null
+              ? "Attive / con problemi"
+              : "In attesa dalla Sentinella"
+          }
           allarme={(cliente.campagneProblemi ?? 0) > 0}
+          na={cliente.campagneAttive == null}
         />
       </div>
 
@@ -93,22 +99,34 @@ function MetricCard({
   valore,
   sotto,
   allarme = false,
+  na = false,
 }: {
   label: string;
   valore: string;
   sotto: string;
   allarme?: boolean;
+  na?: boolean;
 }) {
   return (
     <div className="bg-panel px-5 py-5">
       <p className="etichetta text-taupe mb-2">{label}</p>
+      {na ? (
+        // Dato non disponibile: reso in stile attenuato, non come numero grande
+        <p className="mb-1.5 text-lg text-taupe-chiaro italic leading-none py-2">
+          {valore}
+        </p>
+      ) : (
+        <p
+          className="cifra text-4xl mb-1.5"
+          style={{ color: allarme ? "#8E2A3C" : "#5C1A28" }}
+        >
+          {valore}
+        </p>
+      )}
       <p
-        className="cifra text-4xl mb-1.5"
-        style={{ color: allarme ? "#8E2A3C" : "#5C1A28" }}
+        className="text-[0.72rem] text-taupe"
+        style={{ color: allarme && !na ? "#8E2A3C" : undefined }}
       >
-        {valore}
-      </p>
-      <p className="text-[0.72rem] text-taupe" style={{ color: allarme ? "#8E2A3C" : undefined }}>
         {sotto}
       </p>
     </div>

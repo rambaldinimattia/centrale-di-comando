@@ -140,6 +140,9 @@ export function deriveDashboard(
         checkPeggiore;
     }
 
+    // Storico 7 giorni (serve anche al calcolo del CPL di periodo)
+    const storico7gg = buildStorico(righe);
+
     // Mini-stat "ieri" dall'ultima esecuzione
     const spesaIeri = parseNum(
       righeUltima.find((r) => r.check === "spesa_giorno")?.valore
@@ -147,10 +150,16 @@ export function deriveDashboard(
     const leadIeri = parseNum(
       righeUltima.find((r) => r.check === "volume_lead")?.valore
     );
+
+    // CPL "periodo": priorità al check `cpl` se la Sentinella lo scrive;
+    // altrimenti calcolo sui 7 giorni (spesa totale ÷ lead totali), così il
+    // dato si popola anche quando ieri i lead erano 0 ma nel periodo no.
     const cplRiga = righeUltima.find((r) => r.check === "cpl");
     let cpl = parseNum(cplRiga?.valore);
-    if (cpl == null && spesaIeri != null && leadIeri && leadIeri > 0) {
-      cpl = spesaIeri / leadIeri;
+    if (cpl == null) {
+      const totSpesa = storico7gg.reduce((s, p) => s + p.spesa, 0);
+      const totLead = storico7gg.reduce((s, p) => s + p.lead, 0);
+      if (totLead > 0) cpl = totSpesa / totLead;
     }
 
     // Campagne
@@ -158,9 +167,6 @@ export function deriveDashboard(
     const camp = campRiga
       ? parseCampagne(campRiga.valore)
       : { attive: null, problemi: null };
-
-    // Storico 7 giorni
-    const storico7gg = buildStorico(righe);
 
     clienti.push({
       cliente: nome,
