@@ -57,10 +57,14 @@ function tsValue(ts: string): number {
   return d ? d.getTime() : 0;
 }
 
-// Estrae "attive/problemi" da valori tipo "5/0", "6/2"
+// Estrae "attive/problemi" dal valore del check campagne_issues.
+// Formato atteso: "attive/problemi" (es. "5/0", "6/2"). Tollerante anche a
+// separatori "|" o "-", e al solo numero di attive (es. "5" → problemi ignoto).
 function parseCampagne(raw: string): { attive: number | null; problemi: number | null } {
-  const m = String(raw).match(/(\d+)\s*\/\s*(\d+)/);
-  if (m) return { attive: Number(m[1]), problemi: Number(m[2]) };
+  const coppia = String(raw).match(/(\d+)\s*[/|-]\s*(\d+)/);
+  if (coppia) return { attive: Number(coppia[1]), problemi: Number(coppia[2]) };
+  const singolo = String(raw).match(/\d+/);
+  if (singolo) return { attive: Number(singolo[0]), problemi: null };
   return { attive: null, problemi: null };
 }
 
