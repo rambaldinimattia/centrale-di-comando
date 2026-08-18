@@ -1,8 +1,17 @@
 "use client";
 
+import { parseTs } from "@/lib/derive";
 import { checkLabel, formatTimestamp } from "@/lib/format";
 import type { AlertFeedItem } from "@/lib/types";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+type Finestra = "7g" | "30g" | "tutti";
+
+const FINESTRE: { k: Finestra; label: string; giorni: number | null }[] = [
+  { k: "7g", label: "7 giorni", giorni: 7 },
+  { k: "30g", label: "30 giorni", giorni: 30 },
+  { k: "tutti", label: "Tutti", giorni: null },
+];
 
 // Colori e testo dei badge severità (RISOLTO predisposto per il futuro)
 function badgeStyle(esito: string): { bg: string; fg: string; label: string } {
@@ -24,20 +33,97 @@ function parsePassi(testo: string): string[] {
 }
 
 export function AlertFeed({ feed }: { feed: AlertFeedItem[] }) {
-  if (!feed || feed.length === 0) {
-    return (
-      <p className="text-sm text-taupe italic px-1">
-        Nessun alert registrato. Tutti gli account risultano in salute.
-      </p>
-    );
-  }
+  const [finestra, setFinestra] = useState<Finestra>("7g");
+
+  // Riferimento temporale = alert più recente (evita dipendere dall'orologio server)
+  const refMs = useMemo(() => {
+    let m = 0;
+    for (const it of feed) {
+      const d = parseTs(it.timestamp);
+      if (d) m = Math.max(m, d.getTime());
+    }
+    return m;
+  }, [feed]);
+
+  const filtrati = useMemo(() => {
+    const giorni = FINESTRE.find((f) => f.k === finestra)?.giorni ?? null;
+    if (giorni == null || !refMs) return feed;
+    const cutoff = refMs - giorni * 86_400_000;
+    return feed.filter((it) => {
+      const d = parseTs(it.timestamp);
+      return d ? d.getTime() >= cutoff : false;
+    });
+  }, [feed, finestra, refMs]);
+
+  const conScroll = filtrati.length > 10;
 
   return (
-    <ul className="divide-y divide-bordo border border-bordo bg-card" style={{ borderRadius: 0 }}>
-      {feed.map((item, i) => (
-        <AlertRow key={`${item.cliente}-${item.timestamp}-${i}`} item={item} />
-      ))}
-    </ul>
+    <section>
+      {/* Intestazione con titolo, conteggio e selettore periodo */}
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        <div className="flex items-baseline gap-3">
+          <h2 className="etichetta text-taupe">Cronologia alert</h2>
+          {feed.length > 0 && (
+            <span className="text-[0.7rem] text-taupe-chiaro">
+              {filtrati.length} nel periodo
+            </span>
+          )}
+        </div>
+        <SelettoreFinestra valore={finestra} onChange={setFinestra} />
+      </div>
+
+      {filtrati.length === 0 ? (
+        <p className="text-sm text-taupe italic px-1">
+          {feed.length === 0
+            ? "Nessun alert registrato. Tutti gli account risultano in salute."
+            : "Nessun alert nel periodo selezionato."}
+        </p>
+      ) : (
+        <div
+          className={conScroll ? "max-h-[560px] overflow-y-auto border border-bordo" : ""}
+        >
+          <ul
+            className={`divide-y divide-bordo bg-card ${conScroll ? "" : "border border-bordo"}`}
+            style={{ borderRadius: 0 }}
+          >
+            {filtrati.map((item, i) => (
+              <AlertRow key={`${item.cliente}-${item.timestamp}-${i}`} item={item} />
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SelettoreFinestra({
+  valore,
+  onChange,
+}: {
+  valore: Finestra;
+  onChange: (f: Finestra) => void;
+}) {
+  return (
+    <div className="inline-flex border border-bordo" style={{ borderRadius: 2 }}>
+      {FINESTRE.map((f, i) => {
+        const attivo = f.k === valore;
+        return (
+          <button
+            key={f.k}
+            onClick={() => onChange(f.k)}
+            aria-pressed={attivo}
+            className="etichetta px-3 py-1.5 transizione"
+            style={{
+              backgroundColor: attivo ? "#5C1A28" : "transparent",
+              color: attivo ? "#FDFBF6" : "#8A7E6D",
+              borderLeft: i > 0 ? "1px solid #DDD5C4" : "none",
+            }}
+          >
+            {f.label}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 

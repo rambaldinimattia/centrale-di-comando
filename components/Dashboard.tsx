@@ -58,9 +58,8 @@ export function Dashboard({ data }: { data: DashboardResult }) {
         </section>
       )}
 
-      {/* Feed alert */}
+      {/* Feed alert (titolo + selettore periodo gestiti dentro AlertFeed) */}
       <section className="mb-10">
-        <h2 className="etichetta text-taupe mb-4">Cronologia alert</h2>
         <AlertFeed feed={data.feed} />
       </section>
 

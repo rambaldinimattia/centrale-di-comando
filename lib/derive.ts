@@ -209,11 +209,12 @@ export function deriveDashboard(
     else if (c.esito === "WARNING") nWarning++;
   }
 
-  // Feed alert = righe con esito != OK, timestamp desc, max 20
+  // Feed alert = righe con esito != OK, timestamp desc.
+  // Cap ampio (200) così il selettore di periodo lato UI ha dati da filtrare.
   const feed: AlertFeedItem[] = log
     .filter((r) => r.esito && r.esito !== "OK")
     .sort((a, b) => tsValue(b.timestamp) - tsValue(a.timestamp))
-    .slice(0, 20)
+    .slice(0, 200)
     .map((r) => ({
       timestamp: r.timestamp,
       cliente: r.cliente,
