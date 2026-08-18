@@ -114,21 +114,21 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
           na={cpl == null}
         />
         <MetricCard
-          label="Campagne"
+          label="Campagne con problemi"
           valore={
-            cliente.campagneAttive != null
-              ? `${cliente.campagneAttive}${
-                  cliente.campagneProblemi != null ? ` / ${cliente.campagneProblemi}` : ""
-                }`
+            cliente.campagneProblemi != null
+              ? formatNumero(cliente.campagneProblemi)
               : "non monitorato"
           }
           sotto={
-            cliente.campagneAttive != null
-              ? "Attive / con problemi"
-              : "In attesa dalla Sentinella"
+            cliente.campagneProblemi == null
+              ? "In attesa dalla Sentinella"
+              : cliente.campagneProblemi > 0
+                ? "Da verificare su Meta"
+                : "Nessun problema di delivery"
           }
           allarme={(cliente.campagneProblemi ?? 0) > 0}
-          na={cliente.campagneAttive == null}
+          na={cliente.campagneProblemi == null}
         />
       </div>
 

@@ -76,8 +76,7 @@ export interface ClienteDerivato {
   spesaIeri: number | null;
   leadIeri: number | null;
   cpl: number | null;
-  // Dettaglio campagne
-  campagneAttive: number | null;
+  // Numero di campagne con problemi (0 = nessun problema; null = non monitorato)
   campagneProblemi: number | null;
   storico: PuntoStorico[]; // serie giornaliera, fino a 30 giorni (asc)
 }
