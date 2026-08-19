@@ -57,6 +57,18 @@ function tsValue(ts: string): number {
   return d ? d.getTime() : 0;
 }
 
+// Ricava il numero di campagne CON PROBLEMI dal valore del check campagne_issues.
+// La Sentinella scrive nel formato "attive/problemi" (es. "1/0", "6/2"): il dato
+// che ci interessa è il secondo numero. Se arriva un numero singolo, lo si
+// interpreta già come conteggio dei problemi.
+function problemiDaValore(raw: string | null | undefined): number | null {
+  if (raw == null) return null;
+  const coppia = String(raw).match(/(\d+)\s*[/|-]\s*(\d+)/);
+  if (coppia) return Number(coppia[2]);
+  const singolo = String(raw).match(/-?\d+/);
+  return singolo ? Number(singolo[0]) : null;
+}
+
 interface DeriveOptions {
   fonte: "reale" | "mock";
 }
@@ -152,10 +164,9 @@ export function deriveDashboard(
       cpl = spesaIeri / leadIeri;
     }
 
-    // Campagne con problemi: il check `campagne_issues` riporta nel `valore`
-    // il numero di campagne in problema (0 = nessun problema; assente = non monitorato).
+    // Campagne con problemi: dal valore "attive/problemi" si legge il 2° numero.
     const campRiga = righeUltima.find((r) => r.check === "campagne_issues");
-    const campagneProblemi = campRiga ? parseNum(campRiga.valore) : null;
+    const campagneProblemi = campRiga ? problemiDaValore(campRiga.valore) : null;
 
     clienti.push({
       cliente: nome,
