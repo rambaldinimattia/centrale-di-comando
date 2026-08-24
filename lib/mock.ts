@@ -198,6 +198,17 @@ const ULTIMA_ESECUZIONE: RigaLog[] = [
     dettaglio: "Token valido per 42 giorni",
     alert_inviato: false,
   },
+  {
+    timestamp: OGGI,
+    agente: "sentinella-ghl",
+    cliente: "Villa Aurora Ricevimenti",
+    check: "ghl_contatti",
+    valore: "18",
+    baseline: "",
+    esito: "OK",
+    dettaglio: "18 nuovi contatti CRM in 7 giorni (3 nelle 24h) · 214 totali",
+    alert_inviato: false,
+  },
 
   // Studio Dentistico Bianchi — WARNING (calo volume lead)
   {

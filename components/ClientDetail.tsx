@@ -132,6 +132,21 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
         />
       </div>
 
+      {/* CRM (GoHighLevel) — mostrato solo se il cliente è monitorato su GHL */}
+      {cliente.contattiCrm != null && (
+        <div className="px-6 py-4 border-t border-bordo bg-panel/40">
+          <p className="etichetta text-taupe mb-3">CRM · GoHighLevel</p>
+          <div className="flex items-end gap-3">
+            <p className="cifra text-3xl text-bordeaux leading-none">
+              {formatNumero(cliente.contattiCrm)}
+            </p>
+            <p className="text-[0.72rem] text-taupe mb-0.5">
+              nuovi contatti · ultimi 7 giorni
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Grafico storico */}
       <div className="px-6 py-6 border-t border-bordo">
         <p className="etichetta text-taupe mb-4">

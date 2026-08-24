@@ -81,6 +81,8 @@ export interface ClienteDerivato {
   cpl: number | null;
   // Numero di campagne con problemi (0 = nessun problema; null = non monitorato)
   campagneProblemi: number | null;
+  // CRM (GoHighLevel): nuovi contatti negli ultimi 7 giorni (null = non monitorato)
+  contattiCrm: number | null;
   storico: PuntoStorico[]; // serie giornaliera, fino a 30 giorni (asc)
 }
 
