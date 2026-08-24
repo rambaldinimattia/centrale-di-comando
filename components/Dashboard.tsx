@@ -12,6 +12,16 @@ import { OnboardingList } from "./OnboardingList";
 
 const RANK: Record<Esito, number> = { OK: 0, WARNING: 1, CRITICO: 2 };
 
+// Etichette più belle per i gruppi auto-derivati dal nome (chiave → mostrato).
+// La colonna `gruppo` nel foglio, se presente, ha comunque la precedenza.
+const ETICHETTE_GRUPPO: Record<string, string> = {
+  IC: "ITALIAN CONCEPT",
+};
+
+function etichettaGruppo(key: string): string {
+  return ETICHETTE_GRUPPO[key] ?? key;
+}
+
 // Chiave di raggruppamento: la colonna `gruppo` se presente, altrimenti la
 // prima parola del nome (così "EVANITE RONCADELLE" e "EVANITE PESCHIERA"
 // finiscono insieme). Un gruppo con una sola sede resta una card singola.
@@ -92,7 +102,7 @@ export function Dashboard({ data }: { data: DashboardResult }) {
             b.gruppo ? (
               <GroupCard
                 key={b.key}
-                nome={b.key}
+                nome={etichettaGruppo(b.key)}
                 membri={b.membri}
                 esito={b.esito}
                 aperto={gruppoAperto === b.key}
@@ -115,7 +125,9 @@ export function Dashboard({ data }: { data: DashboardResult }) {
       {/* Sedi della catena aperta */}
       {bloccoAperto && (
         <section className="mb-10 border-l-2 border-bordo pl-4 sm:pl-5">
-          <h2 className="etichetta text-taupe mb-4">Sedi · {bloccoAperto.key}</h2>
+          <h2 className="etichetta text-taupe mb-4">
+            Sedi · {etichettaGruppo(bloccoAperto.key)}
+          </h2>
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {bloccoAperto.membri.map((m) => (
               <ClientCard
