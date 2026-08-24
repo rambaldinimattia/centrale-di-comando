@@ -136,6 +136,12 @@ export default function LeggendaPage() {
           Il numero di contatti / richieste raccolti (l&apos;evento &laquo;lead&raquo;
           registrato su Meta) nel periodo scelto. La &laquo;Baseline&raquo; sotto è il
           riferimento di normalità (vedi sotto).
+          <span className="block mt-2 text-taupe-chiaro">
+            Nota: &laquo;Lead ieri&raquo; (periodo 24 ore) è il{" "}
+            <strong>giorno di calendario completo precedente</strong> al controllo
+            (00:00–23:59), non le ultime 24 ore dall&apos;esecuzione. Es.: il
+            controllo delle 8:00 del 24 conta i lead di tutto il 23.
+          </span>
         </Voce>
         <Voce
           termine="CPL — Costo per Lead"
