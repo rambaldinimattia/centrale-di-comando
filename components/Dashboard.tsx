@@ -8,6 +8,7 @@ import { ClientCard } from "./ClientCard";
 import { ClientDetail } from "./ClientDetail";
 import { GroupCard } from "./GroupCard";
 import { Header } from "./Header";
+import { Nav } from "./Nav";
 import { OnboardingList } from "./OnboardingList";
 
 const RANK: Record<Esito, number> = { OK: 0, WARNING: 1, CRITICO: 2 };
@@ -78,6 +79,7 @@ export function Dashboard({ data }: { data: DashboardResult }) {
 
   return (
     <main className="mx-auto max-w-console px-4 sm:px-6 py-8 sm:py-10">
+      <Nav />
       <Header
         ultimaEsecuzione={data.ultimaEsecuzione}
         nCritici={data.nCritici}
