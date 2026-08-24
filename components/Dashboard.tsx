@@ -4,9 +4,9 @@ import type { DashboardResult } from "@/lib/data";
 import type { ClienteDerivato, Esito } from "@/lib/types";
 import { useMemo, useState } from "react";
 import { AlertFeed } from "./AlertFeed";
-import { BrandGroup } from "./BrandGroup";
 import { ClientCard } from "./ClientCard";
 import { ClientDetail } from "./ClientDetail";
+import { GroupCard } from "./GroupCard";
 import { Header } from "./Header";
 import { OnboardingList } from "./OnboardingList";
 
@@ -59,6 +59,10 @@ export function Dashboard({ data }: { data: DashboardResult }) {
     attivi[0]?.cliente ?? null
   );
 
+  // Catena aperta (le sue sedi si mostrano sotto la griglia)
+  const [gruppoAperto, setGruppoAperto] = useState<string | null>(null);
+  const bloccoAperto = blocchi.find((b) => b.gruppo && b.key === gruppoAperto) ?? null;
+
   const clienteSelezionato =
     attivi.find((c) => c.cliente === selezionato) ?? attivi[0] ?? null;
 
@@ -81,19 +85,20 @@ export function Dashboard({ data }: { data: DashboardResult }) {
         </div>
       )}
 
-      {/* Griglia clienti attivi: card singole + catene a tendina, per gravità */}
-      <section className="mb-10">
+      {/* Griglia clienti attivi: card uniformi (singoli + catene), per gravità */}
+      <section className="mb-8">
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {blocchi.map((b) =>
             b.gruppo ? (
-              <BrandGroup
+              <GroupCard
                 key={b.key}
                 nome={b.key}
                 membri={b.membri}
                 esito={b.esito}
-                selezionato={clienteSelezionato?.cliente ?? null}
-                onSelect={setSelezionato}
-                className="col-span-full"
+                aperto={gruppoAperto === b.key}
+                onClick={() =>
+                  setGruppoAperto((g) => (g === b.key ? null : b.key))
+                }
               />
             ) : (
               <ClientCard
@@ -106,6 +111,23 @@ export function Dashboard({ data }: { data: DashboardResult }) {
           )}
         </div>
       </section>
+
+      {/* Sedi della catena aperta */}
+      {bloccoAperto && (
+        <section className="mb-10 border-l-2 border-bordo pl-4 sm:pl-5">
+          <h2 className="etichetta text-taupe mb-4">Sedi · {bloccoAperto.key}</h2>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {bloccoAperto.membri.map((m) => (
+              <ClientCard
+                key={m.cliente}
+                cliente={m}
+                selezionato={clienteSelezionato?.cliente === m.cliente}
+                onClick={() => setSelezionato(m.cliente)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Dettaglio cliente selezionato */}
       {clienteSelezionato && (
