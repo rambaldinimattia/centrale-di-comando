@@ -1,15 +1,54 @@
 "use client";
 
 import type { DashboardResult } from "@/lib/data";
+import type { ClienteDerivato, Esito } from "@/lib/types";
 import { useMemo, useState } from "react";
 import { AlertFeed } from "./AlertFeed";
+import { BrandGroup } from "./BrandGroup";
+import { ClientCard } from "./ClientCard";
 import { ClientDetail } from "./ClientDetail";
-import { ClientGrid } from "./ClientGrid";
 import { Header } from "./Header";
 import { OnboardingList } from "./OnboardingList";
 
+const RANK: Record<Esito, number> = { OK: 0, WARNING: 1, CRITICO: 2 };
+
+// Chiave di raggruppamento: la colonna `gruppo` se presente, altrimenti la
+// prima parola del nome (così "EVANITE RONCADELLE" e "EVANITE PESCHIERA"
+// finiscono insieme). Un gruppo con una sola sede resta una card singola.
+function chiaveGruppo(c: ClienteDerivato): string {
+  const g = c.config?.gruppo?.trim();
+  if (g) return g;
+  return c.cliente.split(" ")[0];
+}
+
+interface Blocco {
+  key: string;
+  membri: ClienteDerivato[];
+  esito: Esito;
+  gruppo: boolean;
+}
+
+function costruisciBlocchi(attivi: ClienteDerivato[]): Blocco[] {
+  const mappa = new Map<string, ClienteDerivato[]>();
+  for (const c of attivi) {
+    const k = chiaveGruppo(c);
+    if (!mappa.has(k)) mappa.set(k, []);
+    mappa.get(k)!.push(c);
+  }
+  const blocchi: Blocco[] = Array.from(mappa.entries()).map(([key, membri]) => {
+    let esito: Esito = "OK";
+    for (const m of membri) if (RANK[m.esito] > RANK[esito]) esito = m.esito;
+    return { key, membri, esito, gruppo: membri.length > 1 };
+  });
+  blocchi.sort(
+    (a, b) => RANK[b.esito] - RANK[a.esito] || a.key.localeCompare(b.key, "it")
+  );
+  return blocchi;
+}
+
 export function Dashboard({ data }: { data: DashboardResult }) {
   const attivi = useMemo(() => data.clienti.filter((c) => c.attivo), [data.clienti]);
+  const blocchi = useMemo(() => costruisciBlocchi(attivi), [attivi]);
   const onboarding = useMemo(
     () => data.clienti.filter((c) => !c.attivo),
     [data.clienti]
@@ -42,13 +81,30 @@ export function Dashboard({ data }: { data: DashboardResult }) {
         </div>
       )}
 
-      {/* Griglia clienti attivi, ordinata per gravità */}
+      {/* Griglia clienti attivi: card singole + catene a tendina, per gravità */}
       <section className="mb-10">
-        <ClientGrid
-          clienti={attivi}
-          selezionato={clienteSelezionato?.cliente ?? null}
-          onSelect={setSelezionato}
-        />
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {blocchi.map((b) =>
+            b.gruppo ? (
+              <BrandGroup
+                key={b.key}
+                nome={b.key}
+                membri={b.membri}
+                esito={b.esito}
+                selezionato={clienteSelezionato?.cliente ?? null}
+                onSelect={setSelezionato}
+                className="col-span-full"
+              />
+            ) : (
+              <ClientCard
+                key={b.key}
+                cliente={b.membri[0]}
+                selezionato={clienteSelezionato?.cliente === b.membri[0].cliente}
+                onClick={() => setSelezionato(b.membri[0].cliente)}
+              />
+            )
+          )}
+        </div>
       </section>
 
       {/* Dettaglio cliente selezionato */}

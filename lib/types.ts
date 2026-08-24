@@ -26,6 +26,9 @@ export interface ConfigCliente {
   giorni_token_warn: number | null;
   spesa_max_giorno: number | null;
   telegram_tag: string;
+  // Colonna facoltativa: raggruppa i clienti (es. catene con più sedi).
+  // Vuoto = cliente singolo.
+  gruppo?: string;
 }
 
 // Riga della tab `log` — append giornaliero dalla Sentinella
