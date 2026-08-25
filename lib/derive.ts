@@ -171,6 +171,7 @@ export function deriveDashboard(
     // CRM (GoHighLevel): nuovi contatti ultimi 7gg dal check `ghl_contatti`.
     const ghlRiga = righeUltima.find((r) => r.check === "ghl_contatti");
     const contattiCrm = ghlRiga ? parseNum(ghlRiga.valore) : null;
+    const contattiCrmEsito = ghlRiga ? ghlRiga.esito : null;
 
     clienti.push({
       cliente: nome,
@@ -185,6 +186,7 @@ export function deriveDashboard(
       cpl,
       campagneProblemi,
       contattiCrm,
+      contattiCrmEsito,
       storico,
     });
   }

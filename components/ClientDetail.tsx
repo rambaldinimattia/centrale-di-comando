@@ -133,19 +133,34 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
       </div>
 
       {/* CRM (GoHighLevel) — mostrato solo se il cliente è monitorato su GHL */}
-      {cliente.contattiCrm != null && (
-        <div className="px-6 py-4 border-t border-bordo bg-panel/40">
-          <p className="etichetta text-taupe mb-3">CRM · GoHighLevel</p>
-          <div className="flex items-end gap-3">
-            <p className="cifra text-3xl text-bordeaux leading-none">
-              {formatNumero(cliente.contattiCrm)}
-            </p>
-            <p className="text-[0.72rem] text-taupe mb-0.5">
-              nuovi contatti · ultimi 7 giorni
-            </p>
-          </div>
-        </div>
-      )}
+      {cliente.contattiCrm != null &&
+        (() => {
+          const e = cliente.contattiCrmEsito;
+          const allarme = e === "CRITICO" || e === "WARNING";
+          const colore = allarme ? COLORE_ESITO[e!] : "#5C1A28";
+          const stato =
+            e === "CRITICO"
+              ? "CRM fermo · verificare form/integrazione"
+              : e === "WARNING"
+                ? "contatti in calo"
+                : "in linea";
+          return (
+            <div className="px-6 py-4 border-t border-bordo bg-panel/40">
+              <p className="etichetta text-taupe mb-3">CRM · GoHighLevel</p>
+              <div className="flex items-end gap-3">
+                <p className="cifra text-3xl leading-none" style={{ color: colore }}>
+                  {formatNumero(cliente.contattiCrm)}
+                </p>
+                <p
+                  className="text-[0.72rem] mb-0.5"
+                  style={{ color: allarme ? colore : "#8A7E6D" }}
+                >
+                  nuovi contatti · ultimi 7 giorni · {stato}
+                </p>
+              </div>
+            </div>
+          );
+        })()}
 
       {/* Grafico storico */}
       <div className="px-6 py-6 border-t border-bordo">

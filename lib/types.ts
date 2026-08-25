@@ -83,6 +83,7 @@ export interface ClienteDerivato {
   campagneProblemi: number | null;
   // CRM (GoHighLevel): nuovi contatti negli ultimi 7 giorni (null = non monitorato)
   contattiCrm: number | null;
+  contattiCrmEsito: Esito | null;
   storico: PuntoStorico[]; // serie giornaliera, fino a 30 giorni (asc)
 }
 
