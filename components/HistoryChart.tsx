@@ -1,7 +1,10 @@
 import { formatEuro, formatGiornoBreve, formatNumero } from "@/lib/format";
 import type { PuntoStorico } from "@/lib/types";
 
-// Grafico SVG custom: barre = lead (asse sx), linea = spesa (asse dx).
+const META_LIGHT = "#C4A7AD"; // lead tracciati da Meta (chiaro)
+const BORDEAUX = "#5C1A28"; // lead reali dal CRM (o unica serie)
+
+// Grafico SVG custom: barre = lead (Meta + CRM se disponibile), linea = spesa.
 // Nessuna dipendenza esterna, angoli vivi, palette istituzionale.
 export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
   if (!dati || dati.length === 0) {
@@ -11,6 +14,8 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
       </p>
     );
   }
+
+  const hasCrm = dati.some((d) => d.leadCrm != null);
 
   // Geometria
   const W = 720;
@@ -24,23 +29,24 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
 
   const n = dati.length;
   const slot = innerW / n;
-  const barW = Math.min(slot * 0.5, 46);
 
-  // Con molti giorni (30) evito il testo su ogni barra e dirado le etichette X
+  // Barre: doppie (Meta + CRM) se ci sono dati CRM, altrimenti singola
+  const singleBarW = Math.min(slot * 0.5, 46);
+  const pairW = Math.min(slot * 0.64, 50);
+  const gap = 3;
+  const dualBarW = (pairW - gap) / 2;
+
   const mostraValoriBarre = n <= 8;
   const passoEtichetteX = n <= 8 ? 1 : n <= 16 ? 2 : 5;
 
-  const leadMax = Math.max(1, ...dati.map((d) => d.lead));
+  const leadMax = Math.max(1, ...dati.map((d) => Math.max(d.lead, d.leadCrm ?? 0)));
   const spesaMax = Math.max(1, ...dati.map((d) => d.spesa));
-
-  // "Testa" i massimi con un po' di margine
   const leadTop = leadMax * 1.15;
   const spesaTop = spesaMax * 1.15;
 
   const xCenter = (i: number) => padL + slot * i + slot / 2;
   const yLead = (v: number) => padTop + innerH - (v / leadTop) * innerH;
   const ySpesa = (v: number) => padTop + innerH - (v / spesaTop) * innerH;
-
   const baseY = padTop + innerH;
 
   const linePts = dati.map((d, i) => `${xCenter(i)},${ySpesa(d.spesa)}`).join(" ");
@@ -67,29 +73,49 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
             strokeDasharray={f === 1 ? undefined : "2 4"}
           />
         ))}
-        {/* Asse base */}
         <line x1={padL} x2={W - padR} y1={baseY} y2={baseY} stroke="#B5A992" strokeWidth={1} />
 
         {/* Barre lead */}
         {dati.map((d, i) => {
-          const x = xCenter(i) - barW / 2;
+          const cx = xCenter(i);
+
+          if (hasCrm) {
+            const metaX = cx - pairW / 2;
+            const crmX = metaX + dualBarW + gap;
+            const yMeta = yLead(d.lead);
+            const crmVal = d.leadCrm ?? 0;
+            const yCrm = yLead(crmVal);
+            return (
+              <g key={`bar-${i}`}>
+                <rect x={metaX} y={yMeta} width={dualBarW} height={Math.max(0, baseY - yMeta)} fill={META_LIGHT}>
+                  <title>{`${formatGiornoBreve(d.giorno)} · Meta ${formatNumero(d.lead)} lead`}</title>
+                </rect>
+                <rect x={crmX} y={yCrm} width={dualBarW} height={Math.max(0, baseY - yCrm)} fill={BORDEAUX}>
+                  <title>{`${formatGiornoBreve(d.giorno)} · CRM ${formatNumero(crmVal)} lead`}</title>
+                </rect>
+                {mostraValoriBarre && d.lead > 0 && (
+                  <text x={metaX + dualBarW / 2} y={yMeta - 5} textAnchor="middle" fontSize={11} fill="#A0787F" fontFamily="var(--font-cormorant), serif" fontWeight={600}>
+                    {formatNumero(d.lead)}
+                  </text>
+                )}
+                {mostraValoriBarre && crmVal > 0 && (
+                  <text x={crmX + dualBarW / 2} y={yCrm - 5} textAnchor="middle" fontSize={11} fill={BORDEAUX} fontFamily="var(--font-cormorant), serif" fontWeight={600}>
+                    {formatNumero(crmVal)}
+                  </text>
+                )}
+              </g>
+            );
+          }
+
+          const x = cx - singleBarW / 2;
           const y = yLead(d.lead);
-          const h = baseY - y;
           return (
             <g key={`bar-${i}`}>
-              <rect x={x} y={y} width={barW} height={Math.max(0, h)} fill="#5C1A28">
+              <rect x={x} y={y} width={singleBarW} height={Math.max(0, baseY - y)} fill={BORDEAUX}>
                 <title>{`${formatGiornoBreve(d.giorno)} · ${formatNumero(d.lead)} lead`}</title>
               </rect>
               {mostraValoriBarre && d.lead > 0 && (
-                <text
-                  x={xCenter(i)}
-                  y={y - 6}
-                  textAnchor="middle"
-                  fontSize={13}
-                  fill="#5C1A28"
-                  fontFamily="var(--font-cormorant), serif"
-                  fontWeight={600}
-                >
+                <text x={cx} y={y - 6} textAnchor="middle" fontSize={13} fill={BORDEAUX} fontFamily="var(--font-cormorant), serif" fontWeight={600}>
                   {formatNumero(d.lead)}
                 </text>
               )}
@@ -107,11 +133,9 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
           strokeLinecap="round"
         />
         {dati.map((d, i) => (
-          <g key={`pt-${i}`}>
-            <circle cx={xCenter(i)} cy={ySpesa(d.spesa)} r={3.5} fill="#F6F1E7" stroke="#8A7E6D" strokeWidth={2}>
-              <title>{`${formatGiornoBreve(d.giorno)} · ${formatEuro(d.spesa)} spesa`}</title>
-            </circle>
-          </g>
+          <circle key={`pt-${i}`} cx={xCenter(i)} cy={ySpesa(d.spesa)} r={3.5} fill="#F6F1E7" stroke="#8A7E6D" strokeWidth={2}>
+            <title>{`${formatGiornoBreve(d.giorno)} · ${formatEuro(d.spesa)} spesa`}</title>
+          </circle>
         ))}
 
         {/* Etichette asse X (diradate quando i giorni sono molti) */}
@@ -135,16 +159,29 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
       </svg>
 
       {/* Legenda */}
-      <div className="flex items-center gap-6 mt-3 justify-center">
-        <span className="inline-flex items-center gap-2 text-[0.72rem] text-taupe">
-          <span style={{ width: 14, height: 10, background: "#5C1A28", display: "inline-block" }} />
-          Lead / giorno
-        </span>
+      <div className="flex items-center gap-5 mt-3 justify-center flex-wrap">
+        {hasCrm ? (
+          <>
+            <LegendaVoce colore={META_LIGHT} testo="Lead Meta" />
+            <LegendaVoce colore={BORDEAUX} testo="Lead CRM (reali)" />
+          </>
+        ) : (
+          <LegendaVoce colore={BORDEAUX} testo="Lead / giorno" />
+        )}
         <span className="inline-flex items-center gap-2 text-[0.72rem] text-taupe">
           <span style={{ width: 16, height: 2, background: "#8A7E6D", display: "inline-block" }} />
           Spesa / giorno
         </span>
       </div>
     </div>
+  );
+}
+
+function LegendaVoce({ colore, testo }: { colore: string; testo: string }) {
+  return (
+    <span className="inline-flex items-center gap-2 text-[0.72rem] text-taupe">
+      <span style={{ width: 14, height: 10, background: colore, display: "inline-block" }} />
+      {testo}
+    </span>
   );
 }

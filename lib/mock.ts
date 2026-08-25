@@ -203,11 +203,13 @@ const ULTIMA_ESECUZIONE: RigaLog[] = [
     agente: "sentinella-ghl",
     cliente: "Villa Aurora Ricevimenti",
     check: "ghl_lead",
-    valore: "9",
-    baseline: "1.2",
+    valore: "59",
+    baseline: "8.0",
     esito: "OK",
-    dettaglio: "9 lead in 7 giorni (2 nelle 24h) · 34 contatti totali",
+    dettaglio: "59 lead in 7 giorni (8 ieri) · 88 contatti totali",
     alert_inviato: false,
+    serie_crm:
+      "2026-08-05:9,2026-08-06:8,2026-08-07:10,2026-08-08:7,2026-08-09:8,2026-08-10:9,2026-08-11:8",
   },
 
   // Studio Dentistico Bianchi — WARNING (calo volume lead)

@@ -181,6 +181,15 @@ export function deriveDashboard(
     const leadCrm = ghlRiga ? parseNum(ghlRiga.valore) : null;
     const leadCrmEsito = ghlRiga ? ghlRiga.esito : null;
 
+    // Serie giornaliera dei lead CRM → agganciata ai punti dello storico per data
+    const serieCrm = parseSerieCrm(ghlRiga?.serie_crm);
+    if (serieCrm.size > 0) {
+      for (const p of storico) {
+        const n = serieCrm.get(p.giorno);
+        if (n != null) p.leadCrm = n;
+      }
+    }
+
     clienti.push({
       cliente: nome,
       attivo: cfg ? cfg.attivo : true,
@@ -250,6 +259,19 @@ export function deriveDashboard(
     feed,
     fonte: opts.fonte,
   };
+}
+
+// Parsa la serie CRM "YYYY-MM-DD:count,YYYY-MM-DD:count" in una mappa data→conteggio
+function parseSerieCrm(raw?: string): Map<string, number> {
+  const m = new Map<string, number>();
+  if (!raw) return m;
+  for (const part of String(raw).split(",")) {
+    const [g, n] = part.split(":");
+    if (!g) continue;
+    const num = Number(n);
+    if (Number.isFinite(num)) m.set(g.trim(), num);
+  }
+  return m;
 }
 
 // Costruisce la serie giornaliera (per giorno: lead + spesa), fino a 30 giorni.

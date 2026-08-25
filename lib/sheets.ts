@@ -130,5 +130,7 @@ export async function fetchLog(): Promise<RigaLog[]> {
         (o["azione_consigliata"] ?? "").trim() !== ""
           ? o["azione_consigliata"]
           : undefined,
+      serie_crm:
+        (o["serie_crm"] ?? "").trim() !== "" ? o["serie_crm"] : undefined,
     }));
 }

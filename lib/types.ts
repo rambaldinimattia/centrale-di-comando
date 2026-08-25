@@ -44,6 +44,8 @@ export interface RigaLog {
   alert_inviato: boolean;
   // Colonna futura (predisposta): diagnosi del Consigliere
   azione_consigliata?: string;
+  // Serie giornaliera dei lead CRM (dal check ghl_lead), es. "2026-08-19:0,2026-08-20:1"
+  serie_crm?: string;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -63,8 +65,9 @@ export interface CheckDerivato {
 
 export interface PuntoStorico {
   giorno: string; // YYYY-MM-DD
-  lead: number;
+  lead: number; // lead tracciati da Meta quel giorno
   spesa: number;
+  leadCrm?: number; // lead reali dal CRM quel giorno (se disponibili)
 }
 
 export interface ClienteDerivato {
