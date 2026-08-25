@@ -145,8 +145,6 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
                 ? "contatti in calo"
                 : "in linea";
           const crm = cliente.contattiCrm ?? 0;
-          const metaLead7 = somma(storico.slice(-7), "lead"); // lead tracciati da Meta, 7gg
-          const sottostima = crm >= 3 && metaLead7 < crm * 0.6;
           return (
             <div className="px-6 py-4 border-t border-bordo bg-panel/40">
               <p className="etichetta text-taupe mb-3">CRM · GoHighLevel</p>
@@ -158,21 +156,9 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
                   className="text-[0.72rem] mb-0.5"
                   style={{ color: allarme ? colore : "#8A7E6D" }}
                 >
-                  contatti nel CRM · ultimi 7 giorni · {stato}
+                  nuovi contatti nel CRM · ultimi 7 giorni · {stato}
                 </p>
               </div>
-              <p className="text-[0.72rem] text-taupe mt-2 leading-relaxed">
-                Meta ne ha tracciati{" "}
-                <strong className="text-inchiostro">{formatNumero(metaLead7)}</strong> come
-                lead negli stessi 7 giorni.
-                {sottostima && (
-                  <span className="text-bordeaux">
-                    {" "}
-                    Meta ne conta molto meno del CRM: probabile evento Lead non rimandato a
-                    Meta (pixel/CAPI) — il numero reale è quello del CRM.
-                  </span>
-                )}
-              </p>
             </div>
           );
         })()}
