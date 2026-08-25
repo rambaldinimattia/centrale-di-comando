@@ -168,10 +168,10 @@ export function deriveDashboard(
     const campRiga = righeUltima.find((r) => r.check === "campagne_issues");
     const campagneProblemi = campRiga ? problemiDaValore(campRiga.valore) : null;
 
-    // CRM (GoHighLevel): nuovi contatti ultimi 7gg dal check `ghl_contatti`.
-    const ghlRiga = righeUltima.find((r) => r.check === "ghl_contatti");
-    const contattiCrm = ghlRiga ? parseNum(ghlRiga.valore) : null;
-    const contattiCrmEsito = ghlRiga ? ghlRiga.esito : null;
+    // CRM (GoHighLevel): lead reali ultimi 7gg dal check `ghl_lead` (contatti col tag lead).
+    const ghlRiga = righeUltima.find((r) => r.check === "ghl_lead");
+    const leadCrm = ghlRiga ? parseNum(ghlRiga.valore) : null;
+    const leadCrmEsito = ghlRiga ? ghlRiga.esito : null;
 
     clienti.push({
       cliente: nome,
@@ -185,8 +185,8 @@ export function deriveDashboard(
       leadIeri,
       cpl,
       campagneProblemi,
-      contattiCrm,
-      contattiCrmEsito,
+      leadCrm,
+      leadCrmEsito,
       storico,
     });
   }

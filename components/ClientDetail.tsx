@@ -132,33 +132,47 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
         />
       </div>
 
-      {/* CRM (GoHighLevel) — mostrato solo se il cliente è monitorato su GHL */}
-      {cliente.contattiCrm != null &&
+      {/* CRM (GoHighLevel) — lead reali dal tag; mostrato solo se monitorato */}
+      {cliente.leadCrm != null &&
         (() => {
-          const e = cliente.contattiCrmEsito;
+          const e = cliente.leadCrmEsito;
           const allarme = e === "CRITICO" || e === "WARNING";
           const colore = allarme ? COLORE_ESITO[e!] : "#5C1A28";
           const stato =
             e === "CRITICO"
-              ? "CRM fermo · verificare form/integrazione"
+              ? "nessun lead · verificare form/campagne"
               : e === "WARNING"
-                ? "contatti in calo"
+                ? "lead in calo"
                 : "in linea";
-          const crm = cliente.contattiCrm ?? 0;
+          const lead = cliente.leadCrm ?? 0;
+          const metaLead7 = somma(storico.slice(-7), "lead"); // lead tracciati da Meta, 7gg
+          const sottostima = lead > 0 && metaLead7 < lead;
           return (
             <div className="px-6 py-4 border-t border-bordo bg-panel/40">
-              <p className="etichetta text-taupe mb-3">CRM · GoHighLevel</p>
+              <p className="etichetta text-taupe mb-3">Lead reali · CRM (GoHighLevel)</p>
               <div className="flex items-end gap-3">
                 <p className="cifra text-3xl leading-none" style={{ color: colore }}>
-                  {formatNumero(crm)}
+                  {formatNumero(lead)}
                 </p>
                 <p
                   className="text-[0.72rem] mb-0.5"
                   style={{ color: allarme ? colore : "#8A7E6D" }}
                 >
-                  nuovi contatti nel CRM · ultimi 7 giorni · {stato}
+                  lead nel CRM · ultimi 7 giorni · {stato}
                 </p>
               </div>
+              <p className="text-[0.72rem] text-taupe mt-2 leading-relaxed">
+                Meta ne ha tracciati{" "}
+                <strong className="text-inchiostro">{formatNumero(metaLead7)}</strong> negli
+                stessi 7 giorni.
+                {sottostima && (
+                  <span className="text-bordeaux">
+                    {" "}
+                    Meta ne perde qualcuno: i lead veri sono {formatNumero(lead)} (il CRM è la
+                    fonte affidabile).
+                  </span>
+                )}
+              </p>
             </div>
           );
         })()}
