@@ -113,7 +113,15 @@ export function deriveDashboard(
       }
     }
 
-    const righeUltima = righe.filter((r) => dayKey(r.timestamp) === ultimoGiorno);
+    const righeGiorno = righe.filter((r) => dayKey(r.timestamp) === ultimoGiorno);
+    // Se nel giorno ci sono più esecuzioni dello stesso check (es. run manuali
+    // ripetuti, o Meta + sentinella-ghl), tieni per ogni check la riga PIÙ RECENTE.
+    const perCheck = new Map<string, RigaLog>();
+    for (const r of righeGiorno) {
+      const ex = perCheck.get(r.check);
+      if (!ex || tsValue(r.timestamp) > tsValue(ex.timestamp)) perCheck.set(r.check, r);
+    }
+    const righeUltima = Array.from(perCheck.values());
 
     const checks: CheckDerivato[] = righeUltima.map((r) => ({
       check: r.check,
