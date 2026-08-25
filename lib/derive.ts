@@ -274,6 +274,19 @@ function parseSerieCrm(raw?: string): Map<string, number> {
   return m;
 }
 
+// Giorno del DATO (non dell'esecuzione): il controllo delle 8:00 del giorno D
+// riporta i numeri del giorno D-1. Così l'asse del grafico usa i giorni reali
+// e si allinea con la serie CRM (che è già per data reale del contatto).
+function giornoDato(ts: string): string {
+  const d = parseTs(ts);
+  if (!d) return String(ts).slice(0, 10);
+  d.setDate(d.getDate() - 1);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 // Costruisce la serie giornaliera (per giorno: lead + spesa), fino a 30 giorni.
 // Il selettore di periodo nella UI ne prende poi la fetta 24h/7g/30g.
 function buildStorico(righe: RigaLog[]): PuntoStorico[] {
@@ -281,7 +294,7 @@ function buildStorico(righe: RigaLog[]): PuntoStorico[] {
 
   for (const r of righe) {
     if (r.check !== "volume_lead" && r.check !== "spesa_giorno") continue;
-    const g = dayKey(r.timestamp);
+    const g = giornoDato(r.timestamp);
     if (!perGiorno.has(g)) perGiorno.set(g, { lead: null, spesa: null });
     const slot = perGiorno.get(g)!;
     if (r.check === "volume_lead") slot.lead = parseNum(r.valore);

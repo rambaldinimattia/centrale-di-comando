@@ -209,7 +209,7 @@ const ULTIMA_ESECUZIONE: RigaLog[] = [
     dettaglio: "59 lead in 7 giorni (8 ieri) · 88 contatti totali",
     alert_inviato: false,
     serie_crm:
-      "2026-08-05:9,2026-08-06:8,2026-08-07:10,2026-08-08:7,2026-08-09:8,2026-08-10:9,2026-08-11:8",
+      "2026-08-04:9,2026-08-05:8,2026-08-06:10,2026-08-07:7,2026-08-08:8,2026-08-09:9,2026-08-10:8",
   },
 
   // Studio Dentistico Bianchi — WARNING (calo volume lead)
