@@ -299,6 +299,30 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
         </div>
       )}
 
+      {/* Opportunità / pipeline dal CRM */}
+      {cliente.opportunita && (
+        <div className="px-6 py-4 border-t border-bordo">
+          <p className="etichetta text-taupe mb-3">Opportunità · CRM (pipeline)</p>
+          <div className="flex items-end gap-3 flex-wrap">
+            <p className="cifra text-3xl leading-none text-bordeaux">
+              {formatNumero(cliente.opportunita.aperte)}
+            </p>
+            <p className="text-[0.72rem] text-taupe mb-0.5">
+              trattative aperte · {formatEuro(cliente.opportunita.pipeline)} in pipeline
+            </p>
+          </div>
+          <p className="text-[0.72rem] mt-2 leading-relaxed">
+            <span className="text-ok">
+              {formatNumero(cliente.opportunita.vinte7)} vinte
+            </span>{" "}
+            <span className="text-taupe">
+              ({formatEuro(cliente.opportunita.valVinte7)}) · {formatNumero(cliente.opportunita.perse7)}{" "}
+              perse · {formatNumero(cliente.opportunita.nuove7)} nuove — ultimi 7 giorni
+            </span>
+          </p>
+        </div>
+      )}
+
       {/* Grafico storico */}
       <div className="px-6 py-6 border-t border-bordo">
         <p className="etichetta text-taupe mb-4">

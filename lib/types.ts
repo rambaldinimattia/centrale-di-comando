@@ -80,6 +80,16 @@ export interface Automazioni {
   nomiBozze: string; // nomi delle automazioni in bozza, separati da virgola
 }
 
+// Opportunità / pipeline dal CRM (dal check ghl_opportunita)
+export interface Opportunita {
+  aperte: number; // trattative aperte
+  pipeline: number; // valore € delle aperte
+  vinte7: number; // vinte negli ultimi 7 giorni
+  valVinte7: number; // valore € delle vinte 7gg
+  perse7: number; // perse/abbandonate 7gg
+  nuove7: number; // nuove trattative 7gg
+}
+
 export interface ClienteDerivato {
   cliente: string;
   attivo: boolean;
@@ -99,6 +109,8 @@ export interface ClienteDerivato {
   leadCrmEsito: Esito | null;
   // Salute tecnica delle automazioni GHL — null = non monitorato
   automazioni: Automazioni | null;
+  // Opportunità / pipeline dal CRM — null = non monitorato
+  opportunita: Opportunita | null;
   storico: PuntoStorico[]; // serie giornaliera, fino a 30 giorni (asc)
 }
 

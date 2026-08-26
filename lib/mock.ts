@@ -222,6 +222,19 @@ const ULTIMA_ESECUZIONE: RigaLog[] = [
     dettaglio: "8 automazioni · 1 in bozza: Promo Matrimoni Autunno",
     alert_inviato: false,
   },
+  {
+    timestamp: OGGI,
+    agente: "sentinella-ghl",
+    cliente: "Villa Aurora Ricevimenti",
+    check: "ghl_opportunita",
+    valore: "9",
+    baseline: "",
+    esito: "OK",
+    dettaglio:
+      "9 trattative aperte · 12.400€ in pipeline · vinte 7gg: 3 (4.500€) · perse 7gg: 1 · nuove 7gg: 5",
+    alert_inviato: false,
+    serie_crm: "aperte:9,pipeline:12400,vinte7:3,valvinte7:4500,perse7:1,nuove7:5",
+  },
 
   // Studio Dentistico Bianchi — WARNING (calo volume lead)
   {

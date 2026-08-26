@@ -7,6 +7,7 @@ import type {
   ConfigCliente,
   DashboardData,
   Esito,
+  Opportunita,
   PuntoStorico,
   RigaLog,
 } from "./types";
@@ -206,6 +207,10 @@ export function deriveDashboard(
     const autoRiga = righeUltima.find((r) => r.check === "ghl_automazioni");
     const automazioni = autoRiga ? parseAutomazioni(autoRiga) : null;
 
+    // Opportunità / pipeline (check ghl_opportunita, numeri in serie_crm)
+    const oppRiga = righeUltima.find((r) => r.check === "ghl_opportunita");
+    const opportunita = oppRiga ? parseOpportunita(oppRiga) : null;
+
     clienti.push({
       cliente: nome,
       attivo: cfg ? cfg.attivo : true,
@@ -221,6 +226,7 @@ export function deriveDashboard(
       leadCrm,
       leadCrmEsito,
       automazioni,
+      opportunita,
       storico,
     });
   }
@@ -291,6 +297,25 @@ function parseAutomazioni(r: RigaLog): Automazioni {
   const bozze = m ? Number(m[2]) : 0;
   const dopo = String(r.dettaglio).split(/in bozza:\s*/i)[1];
   return { attivi, bozze, nomiBozze: dopo ? dopo.trim() : "" };
+}
+
+// Parsa il check ghl_opportunita: i numeri sono impacchettati in serie_crm come
+// "aperte:6,pipeline:354,vinte7:2,valvinte7:150,perse7:1,nuove7:3".
+function parseOpportunita(r: RigaLog): Opportunita | null {
+  const kv = new Map<string, number>();
+  for (const part of String(r.serie_crm ?? "").split(",")) {
+    const [k, v] = part.split(":");
+    if (k && v !== undefined) kv.set(k.trim(), Number(v));
+  }
+  if (kv.size === 0) return null;
+  return {
+    aperte: kv.get("aperte") ?? 0,
+    pipeline: kv.get("pipeline") ?? 0,
+    vinte7: kv.get("vinte7") ?? 0,
+    valVinte7: kv.get("valvinte7") ?? 0,
+    perse7: kv.get("perse7") ?? 0,
+    nuove7: kv.get("nuove7") ?? 0,
+  };
 }
 
 // Parsa la serie CRM "YYYY-MM-DD:count,YYYY-MM-DD:count" in una mappa data→conteggio
