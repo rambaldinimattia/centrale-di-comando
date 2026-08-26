@@ -29,6 +29,9 @@ export interface ConfigCliente {
   // Colonna facoltativa: raggruppa i clienti (es. catene con più sedi).
   // Vuoto = cliente singolo.
   gruppo?: string;
+  // Tag lead del CRM (uno o più, separati da virgola). Vuoto = CRM lead non
+  // ancora configurato per questo cliente.
+  ghl_tag_lead?: string;
 }
 
 // Riga della tab `log` — append giornaliero dalla Sentinella

@@ -106,6 +106,7 @@ export async function fetchConfig(): Promise<ConfigCliente[]> {
       spesa_max_giorno: parseNumOrNull(o["spesa_max_giorno"]),
       telegram_tag: o["telegram_tag"] ?? "",
       gruppo: (o["gruppo"] ?? "").trim(),
+      ghl_tag_lead: (o["ghl_tag_lead"] ?? "").trim(),
     }));
 }
 
