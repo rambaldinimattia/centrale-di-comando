@@ -1,6 +1,12 @@
 "use client";
 
-import { COLORE_ESITO, LABEL_ESITO, formatEuro, formatNumero } from "@/lib/format";
+import {
+  COLORE_ESITO,
+  LABEL_ESITO,
+  formatDecimale,
+  formatEuro,
+  formatNumero,
+} from "@/lib/format";
 import type { ClienteDerivato, PuntoStorico } from "@/lib/types";
 import { useState } from "react";
 import { HistoryChart } from "./HistoryChart";
@@ -16,6 +22,18 @@ const PERIODI: { k: Periodo; label: string }[] = [
 
 function somma(dati: PuntoStorico[], campo: "lead" | "spesa"): number {
   return dati.reduce((s, p) => s + (p[campo] ?? 0), 0);
+}
+
+// Baseline lead (attesi/giorno) da stringa dello Sheet: "0,7" → 0.7
+function parseBaseline(raw: string | null | undefined): number | null {
+  if (raw == null || String(raw).trim() === "") return null;
+  const n = Number(String(raw).replace(",", ".").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+
+// Formatta la baseline: intero senza decimali, altrimenti una cifra decimale
+function fmtBaseline(n: number): string {
+  return n % 1 === 0 ? formatNumero(n) : formatDecimale(n);
 }
 
 export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
@@ -48,6 +66,19 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
 
   const suffisso = periodo === "24h" ? "ieri" : periodo === "7g" ? "7 giorni" : "30 giorni";
   const giorniGrafico = periodo === "30g" ? 30 : 7;
+  const giorniPeriodo = periodo === "24h" ? 1 : periodo === "7g" ? 7 : 30;
+
+  // Baseline lead scalata sul periodo: la Sentinella scrive gli attesi/giorno,
+  // qui li moltiplichiamo per i giorni del periodo così sono confrontabili col totale.
+  const baselineLeadNum = parseBaseline(baselineLead);
+  const baselinePeriodo =
+    baselineLeadNum != null ? Math.round(baselineLeadNum * giorniPeriodo * 10) / 10 : null;
+  const baselineLabel =
+    baselinePeriodo == null
+      ? "Baseline non disponibile"
+      : periodo === "24h"
+        ? `Baseline ${fmtBaseline(baselinePeriodo)}`
+        : `Baseline ~${fmtBaseline(baselinePeriodo)} (${giorniPeriodo} gg)`;
 
   return (
     <section className="bg-card border border-bordo" style={{ borderRadius: 0 }}>
@@ -90,17 +121,7 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
           }
           allarme={spesaOltre}
         />
-        <MetricCard
-          label={`Lead ${suffisso}`}
-          valore={formatNumero(lead)}
-          sotto={
-            periodo === "24h"
-              ? baselineLead
-                ? `Baseline ${baselineLead}`
-                : "Baseline non disponibile"
-              : "Totale periodo"
-          }
-        />
+        <MetricCard label={`Lead ${suffisso}`} valore={formatNumero(lead)} sotto={baselineLabel} />
         <MetricCard
           label={`CPL ${suffisso}`}
           valore={cpl != null ? formatEuro(cpl) : "n/d"}
@@ -132,7 +153,7 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
         />
       </div>
 
-      {/* CRM (GoHighLevel) — lead reali dal tag; mostrato solo se monitorato */}
+      {/* CRM (GoHighLevel) — lead reali dal tag; segue il periodo scelto */}
       {cliente.leadCrm != null &&
         (() => {
           const e = cliente.leadCrmEsito;
@@ -144,9 +165,24 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
               : e === "WARNING"
                 ? "lead in calo"
                 : "in linea";
-          const lead = cliente.leadCrm ?? 0;
-          const metaLead7 = somma(storico.slice(-7), "lead"); // lead tracciati da Meta, 7gg
-          const sottostima = lead > 0 && metaLead7 < lead;
+          // Finestra CRM allineata al periodo: 24h = ultimo giorno, 7g/30g = somma finestra
+          const wCrm =
+            periodo === "30g"
+              ? storico.slice(-30)
+              : periodo === "7g"
+                ? storico.slice(-7)
+                : storico.slice(-1);
+          const lead = wCrm.reduce((s, p) => s + (p.leadCrm ?? 0), 0);
+          const metaLead = somma(wCrm, "lead"); // lead tracciati da Meta, stessa finestra
+          const sottostima = lead > 0 && metaLead < lead;
+          const suff =
+            periodo === "24h" ? "ieri" : periodo === "7g" ? "ultimi 7 giorni" : "ultimi 30 giorni";
+          const stessoP =
+            periodo === "24h"
+              ? "ieri"
+              : periodo === "7g"
+                ? "negli stessi 7 giorni"
+                : "negli stessi 30 giorni";
           return (
             <div className="px-6 py-4 border-t border-bordo bg-panel/40">
               <p className="etichetta text-taupe mb-3">Lead reali · CRM (GoHighLevel)</p>
@@ -158,13 +194,13 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
                   className="text-[0.72rem] mb-0.5"
                   style={{ color: allarme ? colore : "#8A7E6D" }}
                 >
-                  lead nel CRM · ultimi 7 giorni · {stato}
+                  lead nel CRM · {suff}
+                  {periodo === "7g" ? ` · ${stato}` : ""}
                 </p>
               </div>
               <p className="text-[0.72rem] text-taupe mt-2 leading-relaxed">
                 Meta ne ha tracciati{" "}
-                <strong className="text-inchiostro">{formatNumero(metaLead7)}</strong> negli
-                stessi 7 giorni.
+                <strong className="text-inchiostro">{formatNumero(metaLead)}</strong> {stessoP}.
                 {sottostima && (
                   <span className="text-bordeaux">
                     {" "}
