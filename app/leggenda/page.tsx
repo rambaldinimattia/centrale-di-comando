@@ -82,9 +82,10 @@ export default function LeggendaPage() {
         </h1>
         <p className="text-sm text-taupe mt-4 max-w-2xl leading-relaxed">
           Cosa significa ogni elemento della Centrale di Comando e come viene
-          calcolato. I dati arrivano ogni mattina alle 8:00 dall&apos;Agente
-          Sentinella, che controlla gli account Meta di ciascun cliente e scrive
-          i risultati. La dashboard li mostra: non modifica mai nulla.
+          calcolato. I dati arrivano ogni mattina dall&apos;Agente Sentinella:
+          alle <strong>8:00</strong> controlla gli account <strong>Meta</strong> di
+          ciascun cliente, alle <strong>8:10</strong> il <strong>CRM
+          (GoHighLevel)</strong>. La dashboard li mostra: non modifica mai nulla.
         </p>
       </header>
 
@@ -135,7 +136,10 @@ export default function LeggendaPage() {
         <Voce termine="Lead">
           Il numero di contatti / richieste raccolti (l&apos;evento &laquo;lead&raquo;
           registrato su Meta) nel periodo scelto. La &laquo;Baseline&raquo; sotto è il
-          riferimento di normalità (vedi sotto).
+          riferimento di normalità, <strong>rapportata al periodo</strong> (su 7
+          giorni = i lead attesi in 7 giorni). Per i clienti col CRM il numero
+          <strong> vero</strong> è quello del riquadro &laquo;Lead reali · CRM&raquo; più
+          in basso (Meta a volte ne perde qualcuno).
           <span className="block mt-2 text-taupe-chiaro">
             Nota: &laquo;Lead ieri&raquo; (periodo 24 ore) è il{" "}
             <strong>giorno di calendario completo precedente</strong> al controllo
@@ -178,7 +182,9 @@ export default function LeggendaPage() {
           È il &laquo;normale&raquo; di quel cliente: la <strong>media storica dei lead
           al giorno</strong>, calcolata sugli ultimi ~30 giorni. Serve a capire se
           il presente è in linea o in calo. Esempio: baseline 3.7 = di solito quel
-          cliente porta circa 3-4 lead al giorno.
+          cliente porta circa 3-4 lead al giorno. Nella card Lead è mostrata
+          <strong> rapportata al periodo</strong> scelto (× 7 giorni, × 30 giorni),
+          così è confrontabile col totale accanto.
         </Voce>
         <Voce termine="Finestra di 7 giorni (perché non &laquo;ieri&raquo;)">
           Gli allarmi sui lead NON guardano il singolo giorno: un giorno a zero è
@@ -206,6 +212,11 @@ export default function LeggendaPage() {
           Confronta i lead degli ultimi 7 giorni con quelli attesi (baseline × 7).
           Se sono sotto le soglie di calo che hai impostato per quel cliente
           (es. −35% avviso, −50% critico), scatta l&apos;allarme.
+          <span className="block mt-2 text-taupe-chiaro">
+            Per i clienti col CRM questo controllo diventa <strong>solo
+            informativo</strong>: a dare lo stato dei lead (e l&apos;allarme) è il
+            CRM coi lead veri, perché Meta li sottostima.
+          </span>
         </Voce>
         <Voce
           termine="Zero lead con spesa"
@@ -243,6 +254,52 @@ export default function LeggendaPage() {
           Verifica che la connessione a Meta sia valida. Avvisa in anticipo se il
           token sta per scadere (entro i giorni che hai impostato), così puoi
           rinnovarlo prima che le campagne si fermino.
+        </Voce>
+      </Sezione>
+
+      {/* CRM GoHighLevel */}
+      <Sezione
+        titolo="Il CRM (GoHighLevel)"
+        intro="Per i clienti collegati a GoHighLevel la Centrale legge i lead VERI dal CRM — quelli che ti arrivano come email di nuovo contatto — e monitora anche la salute tecnica delle automazioni."
+      >
+        <Voce
+          termine="Lead reali · CRM"
+          come={
+            <>
+              <Chip colore="#B67B2E" testo="Warning: lead in calo vs baseline" />
+              <Chip colore="#8E2A3C" testo="Critico: nessun lead atteso" />
+            </>
+          }
+        >
+          I lead <strong>effettivi</strong> entrati nel CRM nel periodo scelto,
+          contati dai contatti col <strong>tag lead</strong> del cliente. È il numero
+          <strong> affidabile</strong>: Meta spesso ne perde qualcuno (l&apos;evento
+          non torna sempre dal form), quindi per questi clienti è il CRM a dare lo
+          stato dei lead e a far scattare l&apos;allarme su Telegram. Sotto trovi
+          quanti ne ha tracciati Meta nello stesso periodo, per confronto.
+        </Voce>
+        <Voce
+          termine="Dove guardare (triage)"
+          come={
+            <>
+              <Chip colore="#B67B2E" testo="Lato GHL: sistemare in GoHighLevel" />
+              <Chip colore="#5C1A28" testo="Lato Meta: sistemare l'inserzione" />
+            </>
+          }
+        >
+          Quando i lead calano, la Centrale ti dice <strong>da che parte
+          guardare</strong>, incrociando spesa e contatti: se stai
+          <strong> spendendo ma non entrano contatti</strong> (o c&apos;è
+          un&apos;automazione in bozza) &rarr; problema <strong>lato GHL</strong>;
+          se l&apos;<strong>inserzione non gira</strong> (spesa quasi nulla) &rarr;
+          problema <strong>lato Meta</strong>. Così sai subito dove mettere le mani.
+        </Voce>
+        <Voce termine="Salute tecnica · GHL">
+          Quante <strong>automazioni</strong> (workflow) del cliente sono attive e
+          quante in <strong>bozza</strong>. Un&apos;automazione in bozza collegata a
+          un&apos;inserzione attiva è l&apos;errore classico: i contatti non
+          arrivano. La Centrale elenca le bozze così sai quale attivare. (Legge solo
+          lo stato attivo/bozza, non l&apos;interno del workflow.)
         </Voce>
       </Sezione>
 
