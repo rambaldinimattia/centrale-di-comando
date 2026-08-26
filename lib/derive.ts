@@ -1,5 +1,6 @@
 import type {
   AlertFeedItem,
+  Automazioni,
   CheckDerivato,
   ClienteDerivato,
   ConfigCliente,
@@ -200,6 +201,10 @@ export function deriveDashboard(
       }
     }
 
+    // Salute tecnica automazioni GHL (check ghl_automazioni, valore "attivi/bozze")
+    const autoRiga = righeUltima.find((r) => r.check === "ghl_automazioni");
+    const automazioni = autoRiga ? parseAutomazioni(autoRiga) : null;
+
     clienti.push({
       cliente: nome,
       attivo: cfg ? cfg.attivo : true,
@@ -214,6 +219,7 @@ export function deriveDashboard(
       campagneProblemi,
       leadCrm,
       leadCrmEsito,
+      automazioni,
       storico,
     });
   }
@@ -269,6 +275,16 @@ export function deriveDashboard(
     feed,
     fonte: opts.fonte,
   };
+}
+
+// Parsa il check ghl_automazioni: valore "attivi/bozze", nomi bozze dal dettaglio
+// (dopo "in bozza:"). Es. valore "11/1", dettaglio "12 automazioni · 1 in bozza: Ads X".
+function parseAutomazioni(r: RigaLog): Automazioni {
+  const m = String(r.valore).match(/(\d+)\s*\/\s*(\d+)/);
+  const attivi = m ? Number(m[1]) : 0;
+  const bozze = m ? Number(m[2]) : 0;
+  const dopo = String(r.dettaglio).split(/in bozza:\s*/i)[1];
+  return { attivi, bozze, nomiBozze: dopo ? dopo.trim() : "" };
 }
 
 // Parsa la serie CRM "YYYY-MM-DD:count,YYYY-MM-DD:count" in una mappa data→conteggio

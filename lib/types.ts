@@ -70,6 +70,13 @@ export interface PuntoStorico {
   leadCrm?: number; // lead reali dal CRM quel giorno (se disponibili)
 }
 
+// Salute tecnica delle automazioni GHL (dal check ghl_automazioni)
+export interface Automazioni {
+  attivi: number;
+  bozze: number;
+  nomiBozze: string; // nomi delle automazioni in bozza, separati da virgola
+}
+
 export interface ClienteDerivato {
   cliente: string;
   attivo: boolean;
@@ -87,6 +94,8 @@ export interface ClienteDerivato {
   // CRM (GoHighLevel): lead reali negli ultimi 7 giorni (tag lead) — null = non monitorato
   leadCrm: number | null;
   leadCrmEsito: Esito | null;
+  // Salute tecnica delle automazioni GHL — null = non monitorato
+  automazioni: Automazioni | null;
   storico: PuntoStorico[]; // serie giornaliera, fino a 30 giorni (asc)
 }
 

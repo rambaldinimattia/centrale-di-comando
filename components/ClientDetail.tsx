@@ -183,6 +183,33 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
               : periodo === "7g"
                 ? "negli stessi 7 giorni"
                 : "negli stessi 30 giorni";
+          // Triage: quando i lead calano, da che parte guardare (GHL o Meta)?
+          // Incrocia spesa Meta (7gg) + contatti CRM + eventuali automazioni in bozza.
+          const spesa7 = somma(storico.slice(-7), "spesa");
+          const auto = cliente.automazioni;
+          const triage = !allarme
+            ? null
+            : auto && auto.bozze > 0
+              ? {
+                  lato: "GHL" as const,
+                  testo: `C'è ${
+                    auto.bozze === 1 ? "un'automazione" : `${auto.bozze} automazioni`
+                  } in bozza${
+                    auto.nomiBozze ? ` (${auto.nomiBozze})` : ""
+                  }: probabile causa. Attivala in GHL.`,
+                }
+              : spesa7 <= 0.5
+                ? {
+                    lato: "Meta" as const,
+                    testo:
+                      "L'inserzione non sta girando (spesa quasi nulla negli ultimi 7 giorni). Controlla la campagna su Meta.",
+                  }
+                : {
+                    lato: "GHL" as const,
+                    testo: `Stai spendendo ${formatEuro(
+                      spesa7
+                    )} negli ultimi 7 giorni ma i lead non entrano nel CRM. Controlla automazioni e integrazione in GHL.`,
+                  };
           return (
             <div className="px-6 py-4 border-t border-bordo bg-panel/40">
               <p className="etichetta text-taupe mb-3">Lead reali · CRM (GoHighLevel)</p>
@@ -209,9 +236,49 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
                   </span>
                 )}
               </p>
+              {triage && (
+                <div
+                  className="mt-3 pl-3 py-2"
+                  style={{
+                    borderLeft: `2px solid ${triage.lato === "GHL" ? "#B67B2E" : "#5C1A28"}`,
+                  }}
+                >
+                  <p
+                    className="etichetta mb-1"
+                    style={{ color: triage.lato === "GHL" ? "#B67B2E" : "#5C1A28" }}
+                  >
+                    Dove guardare · {triage.lato}
+                  </p>
+                  <p className="text-[0.72rem] text-inchiostro leading-relaxed">{triage.testo}</p>
+                </div>
+              )}
             </div>
           );
         })()}
+
+      {/* Salute tecnica GHL — stato automazioni (attivo/bozza) */}
+      {cliente.automazioni && (
+        <div className="px-6 py-4 border-t border-bordo">
+          <p className="etichetta text-taupe mb-2">Salute tecnica · GHL</p>
+          <p className="text-sm text-inchiostro">
+            <strong>{formatNumero(cliente.automazioni.attivi)}</strong> automazioni attive
+            {cliente.automazioni.bozze > 0 ? (
+              <span style={{ color: "#B67B2E" }}>
+                {" "}
+                · {formatNumero(cliente.automazioni.bozze)} in bozza
+              </span>
+            ) : (
+              <span className="text-taupe"> · nessuna in bozza</span>
+            )}
+          </p>
+          {cliente.automazioni.bozze > 0 && cliente.automazioni.nomiBozze && (
+            <p className="text-[0.72rem] mt-1" style={{ color: "#B67B2E" }}>
+              In bozza: {cliente.automazioni.nomiBozze} — attivale se collegate a inserzioni
+              attive.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Grafico storico */}
       <div className="px-6 py-6 border-t border-bordo">
