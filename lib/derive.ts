@@ -1,3 +1,4 @@
+import { consiglioPer } from "./consigliere";
 import type {
   AlertFeedItem,
   Automazioni,
@@ -264,7 +265,12 @@ export function deriveDashboard(
       esito: r.esito,
       dettaglio: r.dettaglio,
       alert_inviato: r.alert_inviato,
-      azione_consigliata: r.azione_consigliata,
+      // Consiglio: quello scritto dalla Sentinella se presente, altrimenti il
+      // fallback del Consigliere in base al tipo di check.
+      azione_consigliata:
+        r.azione_consigliata && r.azione_consigliata.trim()
+          ? r.azione_consigliata
+          : consiglioPer(r.check, r.esito),
     }));
 
   return {
