@@ -134,20 +134,30 @@ export function deriveDashboard(
       timestamp: r.timestamp,
     }));
 
+    // Per i clienti col monitoraggio CRM, il conteggio lead di Meta (volume_lead)
+    // è solo informativo: Meta sottostima i lead, quindi non deve far scattare lo
+    // stato del cliente. È il check CRM (ghl_lead), coi lead reali, a governare la
+    // salute dei lead. Senza CRM, volume_lead conta come prima.
+    const hasCrmLead = checks.some((c) => c.check === "ghl_lead");
+    const esitoEff = (c: CheckDerivato): Esito =>
+      hasCrmLead && c.check === "volume_lead" ? "OK" : c.esito;
+
     // Esito peggiore dell'ultima esecuzione
     let esito: Esito = "OK";
-    for (const c of checks) esito = peggiore(esito, c.esito);
+    for (const c of checks) esito = peggiore(esito, esitoEff(c));
 
     // Check peggiore (per la riga stato nella card)
     let checkPeggiore: CheckDerivato | null = null;
     for (const c of checks) {
-      if (!checkPeggiore || RANK[c.esito] > RANK[checkPeggiore.esito]) {
+      if (!checkPeggiore || RANK[esitoEff(c)] > RANK[esitoEff(checkPeggiore)]) {
         checkPeggiore = c;
       }
     }
-    // Se tutto OK, mostra un check informativo (token o volume)
+    // Se tutto OK, mostra un check informativo: col CRM preferisci i lead reali,
+    // altrimenti il volume Meta o lo stato campagne.
     if (checkPeggiore && esito === "OK") {
       checkPeggiore =
+        (hasCrmLead ? checks.find((c) => c.check === "ghl_lead") : undefined) ??
         checks.find((c) => c.check === "volume_lead") ??
         checks.find((c) => c.check === "campagne_issues") ??
         checkPeggiore;
