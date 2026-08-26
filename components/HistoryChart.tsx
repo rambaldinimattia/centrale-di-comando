@@ -1,11 +1,10 @@
 import { formatEuro, formatGiornoBreve, formatNumero } from "@/lib/format";
 import type { PuntoStorico } from "@/lib/types";
 
-const META_LIGHT = "#C4A7AD"; // lead tracciati da Meta (chiaro)
-const BORDEAUX = "#5C1A28"; // lead reali dal CRM (o unica serie)
+const BORDEAUX = "#5C1A28"; // lead reali dal CRM (o unica serie lead)
 
-// Grafico SVG custom: barre = lead (Meta + CRM se disponibile), linea = spesa.
-// Nessuna dipendenza esterna, angoli vivi, palette istituzionale.
+// Grafico SVG custom: una sola barra lead per giorno (CRM reali se disponibili,
+// altrimenti Meta) + linea spesa. Nessuna dipendenza esterna, palette istituzionale.
 export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
   if (!dati || dati.length === 0) {
     return (
@@ -15,7 +14,10 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
     );
   }
 
+  // Se il cliente ha il monitoraggio CRM, la barra mostra i lead REALI del CRM;
+  // altrimenti mostra i lead tracciati da Meta (unico dato disponibile).
   const hasCrm = dati.some((d) => d.leadCrm != null);
+  const leadVal = (d: PuntoStorico) => (hasCrm ? d.leadCrm ?? 0 : d.lead);
 
   // Geometria
   const W = 720;
@@ -29,17 +31,12 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
 
   const n = dati.length;
   const slot = innerW / n;
-
-  // Barre: doppie (Meta + CRM) se ci sono dati CRM, altrimenti singola
-  const singleBarW = Math.min(slot * 0.5, 46);
-  const pairW = Math.min(slot * 0.64, 50);
-  const gap = 3;
-  const dualBarW = (pairW - gap) / 2;
+  const barW = Math.min(slot * 0.5, 46);
 
   const mostraValoriBarre = n <= 8;
   const passoEtichetteX = n <= 8 ? 1 : n <= 16 ? 2 : 5;
 
-  const leadMax = Math.max(1, ...dati.map((d) => Math.max(d.lead, d.leadCrm ?? 0)));
+  const leadMax = Math.max(1, ...dati.map(leadVal));
   const spesaMax = Math.max(1, ...dati.map((d) => d.spesa));
   const leadTop = leadMax * 1.15;
   const spesaTop = spesaMax * 1.15;
@@ -75,48 +72,28 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
         ))}
         <line x1={padL} x2={W - padR} y1={baseY} y2={baseY} stroke="#B5A992" strokeWidth={1} />
 
-        {/* Barre lead */}
+        {/* Barre lead (bordeaux) */}
         {dati.map((d, i) => {
           const cx = xCenter(i);
-
-          if (hasCrm) {
-            const metaX = cx - pairW / 2;
-            const crmX = metaX + dualBarW + gap;
-            const yMeta = yLead(d.lead);
-            const crmVal = d.leadCrm ?? 0;
-            const yCrm = yLead(crmVal);
-            return (
-              <g key={`bar-${i}`}>
-                <rect x={metaX} y={yMeta} width={dualBarW} height={Math.max(0, baseY - yMeta)} fill={META_LIGHT}>
-                  <title>{`${formatGiornoBreve(d.giorno)} · Meta ${formatNumero(d.lead)} lead`}</title>
-                </rect>
-                <rect x={crmX} y={yCrm} width={dualBarW} height={Math.max(0, baseY - yCrm)} fill={BORDEAUX}>
-                  <title>{`${formatGiornoBreve(d.giorno)} · CRM ${formatNumero(crmVal)} lead`}</title>
-                </rect>
-                {mostraValoriBarre && d.lead > 0 && (
-                  <text x={metaX + dualBarW / 2} y={yMeta - 5} textAnchor="middle" fontSize={11} fill="#A0787F" fontFamily="var(--font-cormorant), serif" fontWeight={600}>
-                    {formatNumero(d.lead)}
-                  </text>
-                )}
-                {mostraValoriBarre && crmVal > 0 && (
-                  <text x={crmX + dualBarW / 2} y={yCrm - 5} textAnchor="middle" fontSize={11} fill={BORDEAUX} fontFamily="var(--font-cormorant), serif" fontWeight={600}>
-                    {formatNumero(crmVal)}
-                  </text>
-                )}
-              </g>
-            );
-          }
-
-          const x = cx - singleBarW / 2;
-          const y = yLead(d.lead);
+          const v = leadVal(d);
+          const x = cx - barW / 2;
+          const y = yLead(v);
           return (
             <g key={`bar-${i}`}>
-              <rect x={x} y={y} width={singleBarW} height={Math.max(0, baseY - y)} fill={BORDEAUX}>
-                <title>{`${formatGiornoBreve(d.giorno)} · ${formatNumero(d.lead)} lead`}</title>
+              <rect x={x} y={y} width={barW} height={Math.max(0, baseY - y)} fill={BORDEAUX}>
+                <title>{`${formatGiornoBreve(d.giorno)} · ${formatNumero(v)} lead`}</title>
               </rect>
-              {mostraValoriBarre && d.lead > 0 && (
-                <text x={cx} y={y - 6} textAnchor="middle" fontSize={13} fill={BORDEAUX} fontFamily="var(--font-cormorant), serif" fontWeight={600}>
-                  {formatNumero(d.lead)}
+              {mostraValoriBarre && v > 0 && (
+                <text
+                  x={cx}
+                  y={y - 6}
+                  textAnchor="middle"
+                  fontSize={13}
+                  fill={BORDEAUX}
+                  fontFamily="var(--font-cormorant), serif"
+                  fontWeight={600}
+                >
+                  {formatNumero(v)}
                 </text>
               )}
             </g>
@@ -160,14 +137,7 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
 
       {/* Legenda */}
       <div className="flex items-center gap-5 mt-3 justify-center flex-wrap">
-        {hasCrm ? (
-          <>
-            <LegendaVoce colore={META_LIGHT} testo="Lead Meta" />
-            <LegendaVoce colore={BORDEAUX} testo="Lead CRM (reali)" />
-          </>
-        ) : (
-          <LegendaVoce colore={BORDEAUX} testo="Lead / giorno" />
-        )}
+        <LegendaVoce colore={BORDEAUX} testo={hasCrm ? "Lead CRM (reali)" : "Lead / giorno"} />
         <span className="inline-flex items-center gap-2 text-[0.72rem] text-taupe">
           <span style={{ width: 16, height: 2, background: "#8A7E6D", display: "inline-block" }} />
           Spesa / giorno

@@ -256,8 +256,10 @@ export default function LeggendaPage() {
           e CPL. &laquo;24 ore&raquo; = ieri; &laquo;7/30 giorni&raquo; = totali del periodo.
         </Voce>
         <Voce termine="Grafico andamento">
-          Le <strong>barre bordeaux</strong> sono i lead giorno per giorno; la{" "}
-          <strong>linea</strong> è la spesa giorno per giorno. Serve a vedere il
+          Le <strong>barre bordeaux</strong> sono i lead giorno per giorno &mdash; i{" "}
+          <strong>lead reali del CRM</strong> per i clienti monitorati (quelli che
+          diventano email di nuovo contatto), altrimenti i lead tracciati da Meta.
+          La <strong>linea</strong> è la spesa giorno per giorno. Serve a vedere il
           trend a colpo d&apos;occhio.
         </Voce>
         <Voce termine="Catene (Evanitè, Italian Concept…)">
