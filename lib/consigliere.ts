@@ -27,6 +27,8 @@ export function consiglioPer(check: string, esito: Esito): string {
       return "Costo per lead troppo alto: rivedi targeting, creatività e offerta della campagna.";
     case "campagne_issues":
       return "Ci sono campagne in errore su Meta: aprile e risolvi (rifiuti o problemi di approvazione).";
+    case "stanchezza":
+      return "Creatività sature (frequenza alta / CTR in calo): prepara nuovi visual e copy per le inserzioni segnalate, così abbassi la frequenza e recuperi il CTR.";
     case "ghl_automazioni":
       return "Ci sono automazioni in bozza: se collegate a inserzioni attive, attivale in GoHighLevel per non perdere contatti.";
     default:

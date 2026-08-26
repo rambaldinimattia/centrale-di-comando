@@ -71,8 +71,10 @@ const CHECK_LABEL: Record<string, string> = {
   cpl: "Costo per lead",
   campagne_issues: "Stato campagne",
   token: "Token di accesso",
+  stanchezza: "Stanchezza creatività",
   ghl_lead: "Lead CRM",
   ghl_contatti: "Contatti CRM",
+  ghl_automazioni: "Automazioni CRM",
 };
 
 export function checkLabel(check: string): string {
