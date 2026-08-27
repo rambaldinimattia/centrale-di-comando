@@ -153,28 +153,9 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
         />
       </div>
 
-      {/* CRM (GoHighLevel) — lead reali dal tag; segue il periodo scelto */}
+      {/* CRM (GoHighLevel) — lead reali (tag OPPURE telefono+email); segue il periodo */}
       {cliente.leadCrm != null &&
         (() => {
-          // Senza tag lead configurato il conteggio è sempre 0: mostrarlo come
-          // "0 lead" sarebbe fuorviante. Meglio segnalare che va impostato il tag.
-          const tagConfigurato = Boolean(cliente.config?.ghl_tag_lead?.trim());
-          if (!tagConfigurato) {
-            const metaLead7 = somma(storico.slice(-7), "lead");
-            return (
-              <div className="px-6 py-4 border-t border-bordo bg-panel/40">
-                <p className="etichetta text-taupe mb-2">Lead reali · CRM (GoHighLevel)</p>
-                <p className="text-[0.8rem] text-taupe leading-relaxed">
-                  Tag lead non ancora configurato per questo cliente: i lead reali
-                  compariranno quando imposti il tag nella colonna{" "}
-                  <code className="text-inchiostro">ghl_tag_lead</code> del config.
-                  {metaLead7 > 0 && (
-                    <> Intanto Meta ne traccia {formatNumero(metaLead7)} negli ultimi 7 giorni.</>
-                  )}
-                </p>
-              </div>
-            );
-          }
           const e = cliente.leadCrmEsito;
           const allarme = e === "CRITICO" || e === "WARNING";
           const colore = allarme ? COLORE_ESITO[e!] : "#5C1A28";
