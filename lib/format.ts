@@ -71,6 +71,7 @@ const CHECK_LABEL: Record<string, string> = {
   cpl: "Costo per lead",
   campagne_issues: "Stato campagne",
   token: "Token di accesso",
+  stato_account: "Stato account",
   stanchezza: "Stanchezza creatività",
   ghl_lead: "Lead CRM",
   ghl_contatti: "Contatti CRM",

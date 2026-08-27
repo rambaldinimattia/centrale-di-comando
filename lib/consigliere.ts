@@ -13,6 +13,10 @@ export function consiglioPer(check: string, esito: Esito): string {
       return critico
         ? "Il token Meta non è più valido: rigeneralo subito e aggiornalo, le campagne rischiano il blocco."
         : "Il token Meta sta per scadere: rigeneralo a breve per non fermare le campagne.";
+    case "stato_account":
+      return critico
+        ? "Account pubblicitario bloccato: apri Meta Business e controlla stato account, metodo di pagamento e limite di spesa. Con l'account fermo TUTTE le campagne sono ferme."
+        : "Account vicino al limite di spesa: alza o rimuovi il limite prima che le campagne si fermino.";
     case "volume_lead":
       return "Lead Meta in calo: verifica che le campagne siano attive e i form funzionanti. Per i clienti col CRM guarda i lead reali (Meta sottostima).";
     case "ghl_lead":
