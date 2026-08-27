@@ -49,8 +49,16 @@ export function dayKey(ts: string): string {
 
 export function parseTs(ts: string): Date | null {
   if (!ts) return null;
+  const s = String(ts).trim();
+  // Difesa: se una cella-data torna come numero serial di Google Sheets
+  // (giorni dal 1899-12-30), convertilo. Soglia alta per non toccare i piccoli
+  // interi (che sono conteggi, non date).
+  if (/^\d+(\.\d+)?$/.test(s)) {
+    const serial = Number(s);
+    if (serial > 30000) return new Date(Date.UTC(1899, 11, 30) + serial * 86400000);
+  }
   // Accetta "2026-08-11 08:00:00", ISO, e con la T
-  const normalized = String(ts).trim().replace(" ", "T");
+  const normalized = s.replace(" ", "T");
   let d = new Date(normalized);
   if (isNaN(d.getTime())) d = new Date(ts);
   return isNaN(d.getTime()) ? null : d;

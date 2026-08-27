@@ -82,7 +82,12 @@ async function readTab(sheetId: string, tab: string): Promise<string[][]> {
     spreadsheetId: sheetId,
     range: `${tab}!A1:Z10000`,
     valueRenderOption: "UNFORMATTED_VALUE",
-    dateTimeRenderOption: "FORMATTED_STRING",
+    // SERIAL_NUMBER (non FORMATTED_STRING): se Google Sheets auto-formatta una
+    // cella numerica come data (es. il valore 1 di volume_lead diventa "31/12"),
+    // vogliamo il numero serial grezzo — che coincide col numero originale — non
+    // la stringa-data, che parseNum leggerebbe come giorno del mese (1 → 31).
+    // Il timestamp è testo ISO ("...T...Z"), non tipo-data: resta invariato.
+    dateTimeRenderOption: "SERIAL_NUMBER",
   });
   return (res.data.values as string[][]) ?? [];
 }
