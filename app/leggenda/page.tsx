@@ -255,12 +255,37 @@ export default function LeggendaPage() {
           token sta per scadere (entro i giorni che hai impostato), così puoi
           rinnovarlo prima che le campagne si fermino.
         </Voce>
+        <Voce
+          termine="Stato account"
+          come={
+            <>
+              <Chip colore="#B67B2E" testo="Warning: vicino al limite di spesa" />
+              <Chip colore="#8E2A3C" testo="Critico: account bloccato o limite raggiunto" />
+            </>
+          }
+        >
+          Il <strong>salvavita</strong>: controlla che l&apos;account pubblicitario
+          non sia <strong>disabilitato</strong>, con un <strong>pagamento
+          fallito</strong> o al <strong>limite di spesa</strong> — situazioni che
+          fermano TUTTE le campagne di colpo. Il &laquo;Token&raquo; verifica la
+          <em> connessione</em>; questo verifica che l&apos;account sia <em>vivo</em>.
+        </Voce>
+        <Voce
+          termine="Stanchezza creatività"
+          come={<Chip colore="#B67B2E" testo="Warning: creatività sature" />}
+        >
+          Segnala le <strong>inserzioni stanche</strong>: <strong>frequenza</strong>
+          troppo alta (le stesse persone le vedono troppe volte) o <strong>CTR</strong>
+          crollato sotto la media dell&apos;account. Ti dice <em>quali</em> rinnovare
+          prima che i risultati calino. Compare solo quando c&apos;è davvero una
+          creatività satura.
+        </Voce>
       </Sezione>
 
       {/* CRM GoHighLevel */}
       <Sezione
         titolo="Il CRM (GoHighLevel)"
-        intro="Per i clienti collegati a GoHighLevel la Centrale legge i lead VERI dal CRM — quelli che ti arrivano come email di nuovo contatto — e monitora anche la salute tecnica delle automazioni."
+        intro="Per i clienti collegati a GoHighLevel la Centrale segue tutto il funnel dopo il lead: lead veri, salute delle automazioni, opportunità/pipeline e appuntamenti."
       >
         <Voce
           termine="Lead reali · CRM"
@@ -272,7 +297,10 @@ export default function LeggendaPage() {
           }
         >
           I lead <strong>effettivi</strong> entrati nel CRM nel periodo scelto,
-          contati dai contatti col <strong>tag lead</strong> del cliente. È il numero
+          riconosciuti in <strong>automatico</strong>: un contatto è un lead vero se
+          ha il <strong>tag lead</strong> (dove l&apos;hai impostato) <em>oppure</em>
+          se ha compilato <strong>sia telefono che email</strong> — chi arriva da
+          un&apos;inserzione/form li lascia entrambi, lo spam no. È il numero
           <strong> affidabile</strong>: Meta spesso ne perde qualcuno (l&apos;evento
           non torna sempre dal form), quindi per questi clienti è il CRM a dare lo
           stato dei lead e a far scattare l&apos;allarme su Telegram. Sotto trovi
@@ -301,6 +329,18 @@ export default function LeggendaPage() {
           arrivano. La Centrale elenca le bozze così sai quale attivare. (Legge solo
           lo stato attivo/bozza, non l&apos;interno del workflow.)
         </Voce>
+        <Voce termine="Opportunità · CRM (pipeline)">
+          Le <strong>trattative</strong> del cliente nel CRM: quante
+          <strong> aperte</strong> e il loro <strong>valore in pipeline</strong> (€),
+          più le <strong>vinte</strong> e <strong>perse</strong> totali. È il funnel
+          <em> dopo</em> il lead: mostra quanto potenziale fatturato è in gioco.
+        </Voce>
+        <Voce termine="Appuntamenti · CRM">
+          Gli appuntamenti dai <strong>calendari</strong> del cliente: quanti in
+          <strong> agenda</strong> (prenotati per i prossimi giorni), quanti
+          <strong> prenotati</strong> negli ultimi 7 giorni e gli eventuali
+          <strong> no-show</strong>. Compare solo per i clienti che usano i calendari.
+        </Voce>
       </Sezione>
 
       {/* Elementi della pagina */}
@@ -324,10 +364,19 @@ export default function LeggendaPage() {
           mostra il semaforo peggiore e un riepilogo (es. &laquo;5 sedi · 2 warning&raquo;);
           &laquo;Apri sedi&raquo; mostra i singoli saloni.
         </Voce>
-        <Voce termine="Cronologia alert">
+        <Voce termine="Cronologia alert · Consigliere">
           Lo storico degli eventi non a posto, filtrabile per 7 / 30 giorni o
           tutti. La nota <strong>Telegram</strong> indica che l&apos;avviso è stato
-          inviato anche sul canale. Ogni riga si espande per il dettaglio.
+          inviato anche sul canale. Ogni riga si <strong>espande</strong> e mostra
+          la <strong>Diagnosi del Consigliere</strong>: cosa fare in pratica (es.
+          token in scadenza &rarr; rinnovalo; account bloccato &rarr; controlla il
+          pagamento; creatività stanca &rarr; rinnova i visual).
+        </Voce>
+        <Voce termine="Da quale campagna / inserzione">
+          Negli allarmi di <strong>performance</strong> (lead, CPL, spesa senza lead)
+          il dettaglio dice anche <strong>da quale campagna e inserzione</strong>
+          arriva il problema — così sai subito <em>dove</em> intervenire, non solo
+          <em> che</em> c&apos;è un problema.
         </Voce>
         <Voce termine="In onboarding">
           I clienti non ancora attivi (in fase di preparazione), mostrati in
