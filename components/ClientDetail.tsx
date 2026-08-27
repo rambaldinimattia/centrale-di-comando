@@ -318,6 +318,31 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
         </div>
       )}
 
+      {/* Appuntamenti dai calendari GHL — solo se c'è attività */}
+      {cliente.appuntamenti &&
+        (cliente.appuntamenti.prossimi > 0 ||
+          cliente.appuntamenti.prenotati7 > 0 ||
+          cliente.appuntamenti.noshow7 > 0) && (
+          <div className="px-6 py-4 border-t border-bordo">
+            <p className="etichetta text-taupe mb-3">Appuntamenti · CRM</p>
+            <div className="flex items-end gap-3 flex-wrap">
+              <p className="cifra text-3xl leading-none text-bordeaux">
+                {formatNumero(cliente.appuntamenti.prossimi)}
+              </p>
+              <p className="text-[0.72rem] text-taupe mb-0.5">in agenda (prossimi)</p>
+            </div>
+            <p className="text-[0.72rem] text-taupe mt-2 leading-relaxed">
+              {formatNumero(cliente.appuntamenti.prenotati7)} prenotati negli ultimi 7 giorni
+              {cliente.appuntamenti.noshow7 > 0 && (
+                <span style={{ color: "#B67B2E" }}>
+                  {" "}
+                  · {formatNumero(cliente.appuntamenti.noshow7)} no-show (7gg)
+                </span>
+              )}
+            </p>
+          </div>
+        )}
+
       {/* Grafico storico */}
       <div className="px-6 py-6 border-t border-bordo">
         <p className="etichetta text-taupe mb-4">

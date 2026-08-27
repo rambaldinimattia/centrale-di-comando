@@ -88,6 +88,13 @@ export interface Opportunita {
   perse: number; // trattative perse/abbandonate totali (esatto)
 }
 
+// Appuntamenti dai calendari GHL (dal check ghl_appuntamenti)
+export interface Appuntamenti {
+  prossimi: number; // appuntamenti in agenda (startTime futuro, non annullati)
+  prenotati7: number; // prenotati negli ultimi 7 giorni (per data di prenotazione)
+  noshow7: number; // no-show negli ultimi 7 giorni
+}
+
 export interface ClienteDerivato {
   cliente: string;
   attivo: boolean;
@@ -109,6 +116,8 @@ export interface ClienteDerivato {
   automazioni: Automazioni | null;
   // Opportunità / pipeline dal CRM — null = non monitorato
   opportunita: Opportunita | null;
+  // Appuntamenti dai calendari GHL — null = non monitorato
+  appuntamenti: Appuntamenti | null;
   storico: PuntoStorico[]; // serie giornaliera, fino a 30 giorni (asc)
 }
 

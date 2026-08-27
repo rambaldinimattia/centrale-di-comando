@@ -1,6 +1,7 @@
 import { consiglioPer } from "./consigliere";
 import type {
   AlertFeedItem,
+  Appuntamenti,
   Automazioni,
   CheckDerivato,
   ClienteDerivato,
@@ -211,6 +212,10 @@ export function deriveDashboard(
     const oppRiga = righeUltima.find((r) => r.check === "ghl_opportunita");
     const opportunita = oppRiga ? parseOpportunita(oppRiga) : null;
 
+    // Appuntamenti (check ghl_appuntamenti, numeri in serie_crm)
+    const appRiga = righeUltima.find((r) => r.check === "ghl_appuntamenti");
+    const appuntamenti = appRiga ? parseAppuntamenti(appRiga) : null;
+
     clienti.push({
       cliente: nome,
       attivo: cfg ? cfg.attivo : true,
@@ -227,6 +232,7 @@ export function deriveDashboard(
       leadCrmEsito,
       automazioni,
       opportunita,
+      appuntamenti,
       storico,
     });
   }
@@ -297,6 +303,27 @@ function parseAutomazioni(r: RigaLog): Automazioni {
   const bozze = m ? Number(m[2]) : 0;
   const dopo = String(r.dettaglio).split(/in bozza:\s*/i)[1];
   return { attivi, bozze, nomiBozze: dopo ? dopo.trim() : "" };
+}
+
+// Parsa una stringa "chiave:valore,chiave:valore" in una mappa
+function parseKV(raw?: string): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const part of String(raw ?? "").split(",")) {
+    const [k, v] = part.split(":");
+    if (k && v !== undefined) m.set(k.trim(), Number(v));
+  }
+  return m;
+}
+
+// Parsa il check ghl_appuntamenti (numeri in serie_crm)
+function parseAppuntamenti(r: RigaLog): Appuntamenti | null {
+  const kv = parseKV(r.serie_crm);
+  if (kv.size === 0) return null;
+  return {
+    prossimi: kv.get("prossimi") ?? 0,
+    prenotati7: kv.get("prenotati7") ?? 0,
+    noshow7: kv.get("noshow7") ?? 0,
+  };
 }
 
 // Parsa il check ghl_opportunita: i numeri sono impacchettati in serie_crm come
