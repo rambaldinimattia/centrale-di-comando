@@ -186,13 +186,14 @@ export function deriveDashboard(
       righeUltima.find((r) => r.check === "volume_lead")?.valore
     );
 
-    // CPL 24h: priorità al check `cpl` se presente; altrimenti spesa÷lead di ieri
-    // (le aggregazioni 7g/30g sono calcolate lato UI dal selettore di periodo).
-    const cplRiga = righeUltima.find((r) => r.check === "cpl");
-    let cpl = parseNum(cplRiga?.valore);
-    if (cpl == null && spesaIeri != null && leadIeri && leadIeri > 0) {
-      cpl = spesaIeri / leadIeri;
-    }
+    // CPL 24h = spesa ieri ÷ lead ieri: SEMPRE coerente con le card Spesa e Lead
+    // mostrate accanto. Non usiamo il valore del check `cpl` (che può divergere:
+    // riga di un'altra esecuzione o conteggio lead diverso). Le aggregazioni
+    // 7g/30g sono calcolate lato UI come somma(spesa)/somma(lead).
+    const cpl =
+      spesaIeri != null && leadIeri != null && leadIeri > 0
+        ? spesaIeri / leadIeri
+        : null;
 
     // Campagne con problemi: dal valore "attive/problemi" si legge il 2° numero.
     const campRiga = righeUltima.find((r) => r.check === "campagne_issues");
