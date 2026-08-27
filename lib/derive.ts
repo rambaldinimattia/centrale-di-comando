@@ -311,10 +311,8 @@ function parseOpportunita(r: RigaLog): Opportunita | null {
   return {
     aperte: kv.get("aperte") ?? 0,
     pipeline: kv.get("pipeline") ?? 0,
-    vinte7: kv.get("vinte7") ?? 0,
-    valVinte7: kv.get("valvinte7") ?? 0,
-    perse7: kv.get("perse7") ?? 0,
-    nuove7: kv.get("nuove7") ?? 0,
+    vinte: kv.get("vinte") ?? kv.get("vinte7") ?? 0,
+    perse: kv.get("perse") ?? kv.get("perse7") ?? 0,
   };
 }
 

@@ -230,10 +230,9 @@ const ULTIMA_ESECUZIONE: RigaLog[] = [
     valore: "9",
     baseline: "",
     esito: "OK",
-    dettaglio:
-      "9 trattative aperte · 12.400€ in pipeline · vinte 7gg: 3 (4.500€) · perse 7gg: 1 · nuove 7gg: 5",
+    dettaglio: "9 trattative aperte · 12400€ in pipeline · 34 vinte totali · 12 perse totali",
     alert_inviato: false,
-    serie_crm: "aperte:9,pipeline:12400,vinte7:3,valvinte7:4500,perse7:1,nuove7:5",
+    serie_crm: "aperte:9,pipeline:12400,vinte:34,perse:12",
   },
 
   // Studio Dentistico Bianchi — WARNING (calo volume lead)

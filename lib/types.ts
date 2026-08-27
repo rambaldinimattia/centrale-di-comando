@@ -80,14 +80,12 @@ export interface Automazioni {
   nomiBozze: string; // nomi delle automazioni in bozza, separati da virgola
 }
 
-// Opportunità / pipeline dal CRM (dal check ghl_opportunita)
+// Opportunità / pipeline dal CRM (dal check ghl_opportunita) — conteggi esatti
 export interface Opportunita {
-  aperte: number; // trattative aperte
-  pipeline: number; // valore € delle aperte
-  vinte7: number; // vinte negli ultimi 7 giorni
-  valVinte7: number; // valore € delle vinte 7gg
-  perse7: number; // perse/abbandonate 7gg
-  nuove7: number; // nuove trattative 7gg
+  aperte: number; // trattative aperte (esatto, via meta.total)
+  pipeline: number; // valore € delle aperte (somma su tutte le pagine)
+  vinte: number; // trattative vinte totali (esatto)
+  perse: number; // trattative perse/abbandonate totali (esatto)
 }
 
 export interface ClienteDerivato {

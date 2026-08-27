@@ -311,14 +311,9 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
               trattative aperte · {formatEuro(cliente.opportunita.pipeline)} in pipeline
             </p>
           </div>
-          <p className="text-[0.72rem] mt-2 leading-relaxed">
-            <span className="text-ok">
-              {formatNumero(cliente.opportunita.vinte7)} vinte
-            </span>{" "}
-            <span className="text-taupe">
-              ({formatEuro(cliente.opportunita.valVinte7)}) · {formatNumero(cliente.opportunita.perse7)}{" "}
-              perse · {formatNumero(cliente.opportunita.nuove7)} nuove — ultimi 7 giorni
-            </span>
+          <p className="text-[0.72rem] text-taupe mt-2 leading-relaxed">
+            <span className="text-ok">{formatNumero(cliente.opportunita.vinte)} vinte</span> ·{" "}
+            {formatNumero(cliente.opportunita.perse)} perse (totali)
           </p>
         </div>
       )}
