@@ -114,22 +114,20 @@ export function deriveDashboard(
     const cfg = configByName.get(nome) ?? null;
     const righe = (logByCliente.get(nome) ?? []).slice();
 
-    // Ultima esecuzione = righe del giorno più recente per questo cliente
-    let ultimoGiorno: string | null = null;
+    // Timestamp dell'ultima esecuzione (globale) per questo cliente.
     let ultimoTs: string | null = null;
     for (const r of righe) {
-      const g = dayKey(r.timestamp);
-      if (ultimoGiorno === null || g > ultimoGiorno) ultimoGiorno = g;
       if (ultimoTs === null || tsValue(r.timestamp) > tsValue(ultimoTs)) {
         ultimoTs = r.timestamp;
       }
     }
 
-    const righeGiorno = righe.filter((r) => dayKey(r.timestamp) === ultimoGiorno);
-    // Se nel giorno ci sono più esecuzioni dello stesso check (es. run manuali
-    // ripetuti, o Meta + sentinella-ghl), tieni per ogni check la riga PIÙ RECENTE.
+    // Stato corrente = riga PIÙ RECENTE per ogni tipo di check, tra TUTTE le
+    // righe del cliente (non solo quelle dell'ultimo giorno). Così se i due
+    // workflow (Meta ~8:00 e sentinella-ghl ~8:10, o run manuali) girano a orari
+    // o giorni diversi, i dati CRM non spariscono quando viene eseguito solo Meta.
     const perCheck = new Map<string, RigaLog>();
-    for (const r of righeGiorno) {
+    for (const r of righe) {
       const ex = perCheck.get(r.check);
       if (!ex || tsValue(r.timestamp) > tsValue(ex.timestamp)) perCheck.set(r.check, r);
     }
