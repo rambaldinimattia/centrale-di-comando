@@ -20,6 +20,14 @@ import type {
 
 const RANK: Record<Esito, number> = { OK: 0, WARNING: 1, CRITICO: 2 };
 
+// Finestra dell'"ultimo giro": un check conta per lo STATO/colore solo se cade
+// entro questo intervallo dall'esecuzione più recente del cliente. I due
+// workflow del mattino (Meta ~8:00 e sentinella-ghl ~8:10) rientrano nella
+// stessa finestra; un CRITICO di un giorno precedente (~24h prima) resta fuori,
+// così non "resta acceso". Il colore rispecchia l'allerta di stamattina, non
+// stati passati. I VALORI (spesa, lead, CRM…) restano invece l'ultimo dato noto.
+const FRESH_WINDOW_MS = 20 * 60 * 60 * 1000; // 20 ore
+
 export function peggiore(a: Esito, b: Esito): Esito {
   return RANK[a] >= RANK[b] ? a : b;
 }
@@ -144,6 +152,14 @@ export function deriveDashboard(
       timestamp: r.timestamp,
     }));
 
+    // Un check appartiene all'"ultimo giro" (e quindi conta per il colore) se il
+    // suo timestamp cade entro la finestra dall'esecuzione più recente del
+    // cliente. La riga più recente è per definizione fresca (Δ=0), quindi c'è
+    // sempre almeno un check a governare lo stato.
+    const ultimoMs = ultimoTs ? tsValue(ultimoTs) : 0;
+    const isFresh = (c: { timestamp: string }): boolean =>
+      ultimoMs > 0 && ultimoMs - tsValue(c.timestamp) <= FRESH_WINDOW_MS;
+
     // Per i clienti col monitoraggio CRM, il conteggio lead di Meta (volume_lead)
     // è solo informativo: Meta sottostima i lead, quindi non deve far scattare lo
     // stato del cliente. È il check CRM (ghl_lead), coi lead reali, a governare la
@@ -152,13 +168,15 @@ export function deriveDashboard(
     const esitoEff = (c: CheckDerivato): Esito =>
       hasCrmLead && c.check === "volume_lead" ? "OK" : c.esito;
 
-    // Esito peggiore dell'ultima esecuzione
+    // Esito peggiore dell'ultimo giro (solo check freschi): il colore rispecchia
+    // l'allerta più recente, non un CRITICO rimasto da run precedenti.
     let esito: Esito = "OK";
-    for (const c of checks) esito = peggiore(esito, esitoEff(c));
+    for (const c of checks) if (isFresh(c)) esito = peggiore(esito, esitoEff(c));
 
-    // Check peggiore (per la riga stato nella card)
+    // Check peggiore (per la riga stato nella card) — anch'esso tra i soli freschi
     let checkPeggiore: CheckDerivato | null = null;
     for (const c of checks) {
+      if (!isFresh(c)) continue;
       if (!checkPeggiore || RANK[esitoEff(c)] > RANK[esitoEff(checkPeggiore)]) {
         checkPeggiore = c;
       }
@@ -200,7 +218,9 @@ export function deriveDashboard(
     // CRM (GoHighLevel): lead reali ultimi 7gg dal check `ghl_lead` (contatti col tag lead).
     const ghlRiga = righeUltima.find((r) => r.check === "ghl_lead");
     const leadCrm = ghlRiga ? parseNum(ghlRiga.valore) : null;
-    const leadCrmEsito = ghlRiga ? ghlRiga.esito : null;
+    // Il valore CRM resta visibile (ultimo dato noto), ma il suo colore/allarme
+    // scatta solo se la riga è dell'ultimo giro: niente rosso da run passati.
+    const leadCrmEsito = ghlRiga ? (isFresh(ghlRiga) ? ghlRiga.esito : "OK") : null;
 
     // Serie giornaliera dei lead CRM → agganciata ai punti dello storico per data
     const serieCrm = parseSerieCrm(ghlRiga?.serie_crm);
