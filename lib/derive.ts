@@ -110,11 +110,11 @@ export function deriveDashboard(
     logByCliente.get(key)!.push(r);
   }
 
-  // Unione dei nomi cliente presenti in config e/o log
-  const nomi = new Set<string>([
-    ...config.map((c) => c.cliente.trim()),
-    ...Array.from(logByCliente.keys()),
-  ]);
+  // La tab `config` è la fonte di verità su QUALI clienti esistono: mostriamo
+  // solo i clienti presenti in config. Se rimuovi un cliente da config sparisce
+  // dalla dashboard, anche se nella tab `log` (append-only) restano le sue righe
+  // storiche — che teniamo comunque per lo storico interno.
+  const nomi = new Set<string>(config.map((c) => c.cliente.trim()));
 
   const clienti: ClienteDerivato[] = [];
 
@@ -291,10 +291,10 @@ export function deriveDashboard(
     else if (c.esito === "WARNING") nWarning++;
   }
 
-  // Feed alert = righe con esito != OK, timestamp desc.
-  // Cap ampio (200) così il selettore di periodo lato UI ha dati da filtrare.
+  // Feed alert = righe con esito != OK, timestamp desc. Solo clienti in config:
+  // gli alert storici di un cliente rimosso non devono restare nel feed.
   const feed: AlertFeedItem[] = log
-    .filter((r) => r.esito && r.esito !== "OK")
+    .filter((r) => r.esito && r.esito !== "OK" && nomi.has(r.cliente?.trim()))
     .sort((a, b) => tsValue(b.timestamp) - tsValue(a.timestamp))
     .slice(0, 200)
     .map((r) => ({
