@@ -19,7 +19,7 @@ export function RefreshButton() {
       onClick={aggiorna}
       disabled={isPending}
       className="etichetta inline-flex items-center gap-2 border border-bordo bg-card px-4 py-2 text-taupe hover:border-bordeaux hover:text-bordeaux transizione disabled:opacity-60"
-      style={{ borderRadius: 4 }}
+      style={{ borderRadius: 2 }}
     >
       <svg
         width="14"

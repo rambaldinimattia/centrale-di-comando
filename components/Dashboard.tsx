@@ -1,8 +1,9 @@
 "use client";
 
+import { gsap, useGSAP } from "@/lib/gsap";
 import type { DashboardResult } from "@/lib/data";
 import type { ClienteDerivato, Esito } from "@/lib/types";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertFeed } from "./AlertFeed";
 import { ClientCard } from "./ClientCard";
 import { ClientDetail } from "./ClientDetail";
@@ -77,6 +78,42 @@ export function Dashboard({ data }: { data: DashboardResult }) {
   const clienteSelezionato =
     attivi.find((c) => c.cliente === selezionato) ?? attivi[0] ?? null;
 
+  // Ingresso a cascata delle card (solo al montaggio, solo senza reduced-motion)
+  const gridRef = useRef<HTMLDivElement>(null);
+  useGSAP(
+    () => {
+      const grid = gridRef.current;
+      if (!grid) return;
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.from(Array.from(grid.children), {
+          autoAlpha: 0,
+          y: 12,
+          duration: 0.5,
+          ease: "power2.out",
+          stagger: 0.05,
+        });
+      });
+      return () => mm.revert();
+    },
+    { scope: gridRef }
+  );
+
+  // Al click su una card, porta in vista il dettaglio (utile soprattutto su
+  // mobile, dov'è più in basso). Salta il primo render (selezione di default).
+  const dettaglioRef = useRef<HTMLElement>(null);
+  const primoScroll = useRef(true);
+  useEffect(() => {
+    if (primoScroll.current) {
+      primoScroll.current = false;
+      return;
+    }
+    const el = dettaglioRef.current;
+    if (!el) return;
+    const riduci = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: riduci ? "auto" : "smooth", block: "start" });
+  }, [selezionato]);
+
   return (
     <main className="mx-auto max-w-console px-4 sm:px-6 py-8 sm:py-10">
       <Nav />
@@ -99,7 +136,10 @@ export function Dashboard({ data }: { data: DashboardResult }) {
 
       {/* Griglia clienti attivi: card uniformi (singoli + catene), per gravità */}
       <section className="mb-8">
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          ref={gridRef}
+          className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {blocchi.map((b) =>
             b.gruppo ? (
               <GroupCard
@@ -145,7 +185,7 @@ export function Dashboard({ data }: { data: DashboardResult }) {
 
       {/* Dettaglio cliente selezionato */}
       {clienteSelezionato && (
-        <section className="mb-10">
+        <section ref={dettaglioRef} className="mb-10 scroll-mt-6">
           <ClientDetail cliente={clienteSelezionato} />
         </section>
       )}

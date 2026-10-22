@@ -9,6 +9,7 @@ import {
 } from "@/lib/format";
 import type { ClienteDerivato, PuntoStorico } from "@/lib/types";
 import { useState } from "react";
+import { CountUp } from "./CountUp";
 import { HistoryChart } from "./HistoryChart";
 import { Semaforo } from "./Semaforo";
 
@@ -112,6 +113,8 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
         <MetricCard
           label={`Spesa ${suffisso}`}
           valore={formatEuro(spesa)}
+          n={spesa}
+          format={formatEuro}
           sotto={
             periodo === "24h"
               ? tetto != null
@@ -121,10 +124,18 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
           }
           allarme={spesaOltre}
         />
-        <MetricCard label={`Lead ${suffisso}`} valore={formatNumero(lead)} sotto={baselineLabel} />
+        <MetricCard
+          label={`Lead ${suffisso}`}
+          valore={formatNumero(lead)}
+          n={lead}
+          format={formatNumero}
+          sotto={baselineLabel}
+        />
         <MetricCard
           label={`CPL ${suffisso}`}
           valore={cpl != null ? formatEuro(cpl) : "n/d"}
+          n={cpl}
+          format={formatEuro}
           sotto={
             cpl != null
               ? periodo === "24h"
@@ -141,6 +152,8 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
               ? formatNumero(cliente.campagneProblemi)
               : "non monitorato"
           }
+          n={cliente.campagneProblemi}
+          format={formatNumero}
           sotto={
             cliente.campagneProblemi == null
               ? "In attesa dalla Sentinella"
@@ -372,12 +385,17 @@ function MetricCard({
   sotto,
   allarme = false,
   na = false,
+  n,
+  format,
 }: {
   label: string;
   valore: string;
   sotto: string;
   allarme?: boolean;
   na?: boolean;
+  // Se passati (e il dato è disponibile), il numero sale da 0 al valore
+  n?: number | null;
+  format?: (x: number) => string;
 }) {
   return (
     <div className="bg-panel px-5 py-5">
@@ -390,7 +408,11 @@ function MetricCard({
           className="cifra text-4xl mb-1.5"
           style={{ color: allarme ? "#8E2A3C" : "#5C1A28" }}
         >
-          {valore}
+          {n != null && format != null ? (
+            <CountUp value={n} format={format} />
+          ) : (
+            valore
+          )}
         </p>
       )}
       <p

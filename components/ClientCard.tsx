@@ -37,10 +37,17 @@ export function ClientCard({ cliente, selezionato, onClick }: ClientCardProps) {
         {statoTesto}
       </p>
 
-      <div className="grid grid-cols-3 gap-2 border-t border-bordo pt-3">
-        <MiniStat label="Spesa ieri" valore={formatEuro(cliente.spesaIeri)} />
-        <MiniStat label="Lead ieri" valore={formatNumero(cliente.leadIeri)} />
-        <MiniStat label="CPL" valore={cliente.cpl != null ? formatEuro(cliente.cpl) : "—"} />
+      <div className="border-t border-bordo pt-3">
+        {cliente.spesaIeri == null && cliente.leadIeri == null && cliente.leadCrm != null ? (
+          // Cliente solo-CRM (nessun dato Meta): meglio il lead reale che tre "—"
+          <MiniStat label="Lead CRM · 7g" valore={formatNumero(cliente.leadCrm)} />
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            <MiniStat label="Spesa ieri" valore={formatEuro(cliente.spesaIeri)} />
+            <MiniStat label="Lead ieri" valore={formatNumero(cliente.leadIeri)} />
+            <MiniStat label="CPL" valore={cliente.cpl != null ? formatEuro(cliente.cpl) : "—"} />
+          </div>
+        )}
       </div>
     </button>
   );

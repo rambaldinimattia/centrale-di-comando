@@ -19,11 +19,13 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
   const hasCrm = dati.some((d) => d.leadCrm != null);
   const leadVal = (d: PuntoStorico) => (hasCrm ? d.leadCrm ?? 0 : d.lead);
 
-  // Geometria
+  // Geometria. padL/padR lasciano spazio alle etichette di scala: lead a
+  // sinistra (bordeaux), spesa a destra (taupe), così entrambe le serie sono
+  // leggibili in grandezza anche a 30 giorni, non solo col tooltip.
   const W = 720;
   const H = 260;
-  const padL = 8;
-  const padR = 8;
+  const padL = 30;
+  const padR = 42;
   const padTop = 20;
   const padBottom = 34;
   const innerW = W - padL - padR;
@@ -71,6 +73,35 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
           />
         ))}
         <line x1={padL} x2={W - padR} y1={baseY} y2={baseY} stroke="#8C7F69" strokeWidth={1} />
+
+        {/* Etichette di scala: lead (sx, bordeaux) e spesa (dx, taupe) */}
+        {[0.5, 1].map((f) => {
+          const y = padTop + innerH - innerH * f + 3;
+          return (
+            <g key={`axis-${f}`}>
+              <text
+                x={padL - 6}
+                y={y}
+                textAnchor="end"
+                fontSize={10}
+                fill={BORDEAUX}
+                fontFamily="var(--font-jost), sans-serif"
+              >
+                {formatNumero(Math.round(leadTop * f))}
+              </text>
+              <text
+                x={W - padR + 6}
+                y={y}
+                textAnchor="start"
+                fontSize={10}
+                fill="#6E6352"
+                fontFamily="var(--font-jost), sans-serif"
+              >
+                {formatEuro(Math.round(spesaTop * f))}
+              </text>
+            </g>
+          );
+        })}
 
         {/* Barre lead (bordeaux) */}
         {dati.map((d, i) => {
