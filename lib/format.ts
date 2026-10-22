@@ -73,6 +73,8 @@ const CHECK_LABEL: Record<string, string> = {
   token: "Token di accesso",
   stato_account: "Stato account",
   stanchezza: "Stanchezza creatività",
+  pixel_capi: "Pixel / CAPI",
+  erogazione: "Erogazione",
   ghl_lead: "Lead CRM",
   ghl_contatti: "Contatti CRM",
   ghl_automazioni: "Automazioni CRM",

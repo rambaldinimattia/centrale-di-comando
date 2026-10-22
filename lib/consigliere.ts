@@ -25,6 +25,14 @@ export function consiglioPer(check: string, esito: Esito): string {
         : "Lead reali in calo: incrocia con la spesa (triage) per capire se il problema è lato GHL o lato inserzione.";
     case "zero_lead_spesa":
       return "Stai spendendo senza generare lead: probabile problema di tracciamento o form. Verifica pixel/CAPI e che il form raccolga i contatti.";
+    case "pixel_capi":
+      return critico
+        ? "Eventi Pixel/CAPI non arrivano più (o crollati): il tracciamento è rotto. Controlla pixel sulla landing, l'integrazione CAPI e il dataset; finché è così stai ottimizzando alla cieca."
+        : "Qualità del tracciamento in calo (match quality bassa o eventi in diminuzione): verifica pixel, parametri CAPI e deduplica eventi.";
+    case "erogazione":
+      return critico
+        ? "L'inserzione non sta erogando (spesa quasi nulla rispetto al budget): campagna in pausa, in revisione o budget esaurito. Controlla su Meta che sia attiva e approvata."
+        : "Erogazione sotto l'atteso: l'inserzione spende meno del budget. Verifica stato, approvazione e limiti di budget/offerta su Meta.";
     case "spesa_giorno":
       return "Spesa oltre il tetto giornaliero: controlla il budget delle campagne prima che sfori troppo.";
     case "cpl":

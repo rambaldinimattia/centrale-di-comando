@@ -15,6 +15,8 @@ export type CheckTipo =
   | "token"
   | "stato_account"
   | "stanchezza"
+  | "pixel_capi" // salute tracciamento: volume eventi Pixel/CAPI + match quality
+  | "erogazione" // delivery: spesa troppo sotto il budget atteso (inserzione ferma)
   // CRM (GoHighLevel)
   | "ghl_lead"
   | "ghl_contatti"

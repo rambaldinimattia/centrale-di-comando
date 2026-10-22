@@ -10,6 +10,7 @@ import {
 import type { ClienteDerivato, PuntoStorico } from "@/lib/types";
 import { useState } from "react";
 import { CountUp } from "./CountUp";
+import { Funnel } from "./Funnel";
 import { HistoryChart } from "./HistoryChart";
 import { Semaforo } from "./Semaforo";
 
@@ -165,6 +166,9 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
           na={cliente.campagneProblemi == null}
         />
       </div>
+
+      {/* Funnel end-to-end: dove si rompe la catena (vista diagnostica) */}
+      <Funnel cliente={cliente} />
 
       {/* CRM (GoHighLevel) — lead reali (tag OPPURE telefono+email); segue il periodo */}
       {cliente.leadCrm != null &&
