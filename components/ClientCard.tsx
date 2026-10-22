@@ -53,26 +53,17 @@ export function ClientCard({ cliente, selezionato, onClick }: ClientCardProps) {
   );
 }
 
-// Etichetta compatta per la chip di severità (segnale non solo cromatico)
+// Stato in forma testuale per gli screen reader: visivamente lo comunicano già
+// il pallino e il bordo colorati (che però sono aria-hidden), qui lo rendiamo
+// disponibile anche a chi usa un lettore di schermo. Nessuna resa visibile.
 const CHIP_LABEL: Record<Esito, string> = {
   OK: "In salute",
   WARNING: "Warning",
   CRITICO: "Critico",
 };
 
-// Chip di stato: visibile solo per warning/critico (le card verdi restano pulite);
-// per lo stato OK resta un'etichetta per gli screen reader.
 function ChipEsito({ esito }: { esito: Esito }) {
-  if (esito === "OK") return <span className="sr-only">In salute</span>;
-  const colore = COLORE_ESITO[esito];
-  return (
-    <span
-      className="etichetta align-middle mr-2 px-1.5 py-0.5 text-[0.58rem] border whitespace-nowrap"
-      style={{ color: colore, borderColor: colore, backgroundColor: `${colore}12` }}
-    >
-      {CHIP_LABEL[esito]}
-    </span>
-  );
+  return <span className="sr-only">{CHIP_LABEL[esito]}</span>;
 }
 
 function MiniStat({ label, valore }: { label: string; valore: string }) {
