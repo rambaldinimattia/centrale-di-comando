@@ -20,7 +20,7 @@ function badgeStyle(esito: string): { bg: string; fg: string; label: string } {
   if (s === "WARNING") return { bg: "#B67B2E", fg: "#FDFBF6", label: "Warning" };
   if (s === "RISOLTO" || s === "OK")
     return { bg: "#4A6B4F", fg: "#FDFBF6", label: "Risolto" };
-  return { bg: "#8A7E6D", fg: "#FDFBF6", label: esito };
+  return { bg: "#6E6352", fg: "#FDFBF6", label: esito };
 }
 
 // Divide una stringa "1. ... 2. ... 3. ..." in passi numerati
@@ -115,7 +115,7 @@ function SelettoreFinestra({
             className="etichetta px-3 py-1.5 transizione"
             style={{
               backgroundColor: attivo ? "#5C1A28" : "transparent",
-              color: attivo ? "#FDFBF6" : "#8A7E6D",
+              color: attivo ? "#FDFBF6" : "#6E6352",
               borderLeft: i > 0 ? "1px solid #DDD5C4" : "none",
             }}
           >

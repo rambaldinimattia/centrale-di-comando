@@ -1,5 +1,5 @@
 import { COLORE_ESITO, checkLabel, formatEuro, formatNumero } from "@/lib/format";
-import type { ClienteDerivato } from "@/lib/types";
+import type { ClienteDerivato, Esito } from "@/lib/types";
 import { Semaforo } from "./Semaforo";
 
 interface ClientCardProps {
@@ -33,6 +33,7 @@ export function ClientCard({ cliente, selezionato, onClick }: ClientCardProps) {
       </div>
 
       <p className="text-[0.82rem] text-taupe leading-snug mb-4 line-clamp-2 min-h-[2.4em]">
+        <ChipEsito esito={cliente.esito} />
         {statoTesto}
       </p>
 
@@ -42,6 +43,28 @@ export function ClientCard({ cliente, selezionato, onClick }: ClientCardProps) {
         <MiniStat label="CPL" valore={cliente.cpl != null ? formatEuro(cliente.cpl) : "—"} />
       </div>
     </button>
+  );
+}
+
+// Etichetta compatta per la chip di severità (segnale non solo cromatico)
+const CHIP_LABEL: Record<Esito, string> = {
+  OK: "In salute",
+  WARNING: "Warning",
+  CRITICO: "Critico",
+};
+
+// Chip di stato: visibile solo per warning/critico (le card verdi restano pulite);
+// per lo stato OK resta un'etichetta per gli screen reader.
+function ChipEsito({ esito }: { esito: Esito }) {
+  if (esito === "OK") return <span className="sr-only">In salute</span>;
+  const colore = COLORE_ESITO[esito];
+  return (
+    <span
+      className="etichetta align-middle mr-2 px-1.5 py-0.5 text-[0.58rem] border whitespace-nowrap"
+      style={{ color: colore, borderColor: colore, backgroundColor: `${colore}12` }}
+    >
+      {CHIP_LABEL[esito]}
+    </span>
   );
 }
 

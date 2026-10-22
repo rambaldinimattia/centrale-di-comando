@@ -64,6 +64,9 @@ export function parseTs(ts: string): Date | null {
   if (/^\d+(\.\d+)?$/.test(s)) {
     const serial = Number(s);
     if (serial > 30000) return new Date(Date.UTC(1899, 11, 30) + serial * 86400000);
+    // Un intero piccolo è un conteggio, non un timestamp: non lasciarlo cadere
+    // su `new Date()`, che ne ricaverebbe una data spazzatura.
+    return null;
   }
   // Accetta "2026-08-11 08:00:00", ISO, e con la T
   const normalized = s.replace(" ", "T");

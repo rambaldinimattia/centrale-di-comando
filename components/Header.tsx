@@ -50,11 +50,11 @@ function Pill({ colore, numero, label }: { colore: string; numero: number; label
       className="inline-flex items-center gap-2 px-3 py-1 border text-sm"
       style={{
         borderColor: attivo ? colore : "#DDD5C4",
-        color: attivo ? colore : "#8A7E6D",
+        color: attivo ? colore : "#6E6352",
         backgroundColor: attivo ? `${colore}0F` : "transparent",
       }}
     >
-      <span className="cifra text-xl" style={{ color: attivo ? colore : "#B5A992" }}>
+      <span className="cifra text-xl" style={{ color: attivo ? colore : "#8C7F69" }}>
         {numero}
       </span>
       <span className="etichetta">{label}</span>

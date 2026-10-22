@@ -70,7 +70,7 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
             strokeDasharray={f === 1 ? undefined : "2 4"}
           />
         ))}
-        <line x1={padL} x2={W - padR} y1={baseY} y2={baseY} stroke="#B5A992" strokeWidth={1} />
+        <line x1={padL} x2={W - padR} y1={baseY} y2={baseY} stroke="#8C7F69" strokeWidth={1} />
 
         {/* Barre lead (bordeaux) */}
         {dati.map((d, i) => {
@@ -104,13 +104,13 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
         <polyline
           points={linePts}
           fill="none"
-          stroke="#8A7E6D"
+          stroke="#6E6352"
           strokeWidth={2}
           strokeLinejoin="round"
           strokeLinecap="round"
         />
         {dati.map((d, i) => (
-          <circle key={`pt-${i}`} cx={xCenter(i)} cy={ySpesa(d.spesa)} r={3.5} fill="#F6F1E7" stroke="#8A7E6D" strokeWidth={2}>
+          <circle key={`pt-${i}`} cx={xCenter(i)} cy={ySpesa(d.spesa)} r={3.5} fill="#F6F1E7" stroke="#6E6352" strokeWidth={2}>
             <title>{`${formatGiornoBreve(d.giorno)} · ${formatEuro(d.spesa)} spesa`}</title>
           </circle>
         ))}
@@ -126,7 +126,7 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
               y={H - 12}
               textAnchor="middle"
               fontSize={11}
-              fill="#8A7E6D"
+              fill="#6E6352"
               fontFamily="var(--font-jost), sans-serif"
             >
               {formatGiornoBreve(d.giorno)}
@@ -139,7 +139,7 @@ export function HistoryChart({ dati }: { dati: PuntoStorico[] }) {
       <div className="flex items-center gap-5 mt-3 justify-center flex-wrap">
         <LegendaVoce colore={BORDEAUX} testo={hasCrm ? "Lead CRM (reali)" : "Lead / giorno"} />
         <span className="inline-flex items-center gap-2 text-[0.72rem] text-taupe">
-          <span style={{ width: 16, height: 2, background: "#8A7E6D", display: "inline-block" }} />
+          <span style={{ width: 16, height: 2, background: "#6E6352", display: "inline-block" }} />
           Spesa / giorno
         </span>
       </div>

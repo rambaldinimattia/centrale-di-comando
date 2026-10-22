@@ -22,7 +22,7 @@ export function Nav() {
             href={l.href}
             className="etichetta transizione -mb-px"
             style={{
-              color: attivo ? "#5C1A28" : "#8A7E6D",
+              color: attivo ? "#5C1A28" : "#6E6352",
               borderBottom: `2px solid ${attivo ? "#5C1A28" : "transparent"}`,
               paddingBottom: 10,
             }}

@@ -15,7 +15,7 @@ export function OnboardingList({ clienti }: { clienti: ClienteDerivato[] }) {
             <span
               aria-hidden
               className="inline-block rounded-full"
-              style={{ width: 10, height: 10, background: "#B5A992" }}
+              style={{ width: 10, height: 10, background: "#8C7F69" }}
             />
             <div className="min-w-0">
               <h3 className="cifra text-xl text-taupe leading-tight truncate">

@@ -219,7 +219,7 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
                 </p>
                 <p
                   className="text-[0.72rem] mb-0.5"
-                  style={{ color: allarme ? colore : "#8A7E6D" }}
+                  style={{ color: allarme ? colore : "#6E6352" }}
                 >
                   lead nel CRM · {suff}
                   {periodo === "7g" ? ` · ${stato}` : ""}
@@ -354,7 +354,7 @@ function SelettorePeriodo({
             className="etichetta px-3 py-1.5 transizione"
             style={{
               backgroundColor: attivo ? "#5C1A28" : "transparent",
-              color: attivo ? "#FDFBF6" : "#8A7E6D",
+              color: attivo ? "#FDFBF6" : "#6E6352",
               borderLeft: i > 0 ? "1px solid #DDD5C4" : "none",
             }}
           >

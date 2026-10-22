@@ -16,8 +16,8 @@ const config: Config = {
         bordo: "#DDD5C4", // bordi
         // Testo
         inchiostro: "#2C2420", // primario
-        taupe: "#8A7E6D", // secondario
-        "taupe-chiaro": "#B5A992", // taupe chiaro
+        taupe: "#6E6352", // secondario (scurito per contrasto AA su card e fondo)
+        "taupe-chiaro": "#8C7F69", // terziario (AA-large; un gradino sopra taupe)
         // Istituzionale
         bordeaux: "#5C1A28",
         // Severita

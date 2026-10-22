@@ -6,12 +6,21 @@
 export type Esito = "OK" | "WARNING" | "CRITICO";
 
 export type CheckTipo =
+  // Meta / account
   | "volume_lead"
   | "zero_lead_spesa"
   | "spesa_giorno"
   | "cpl"
   | "campagne_issues"
-  | "token";
+  | "token"
+  | "stato_account"
+  | "stanchezza"
+  // CRM (GoHighLevel)
+  | "ghl_lead"
+  | "ghl_contatti"
+  | "ghl_automazioni"
+  | "ghl_opportunita"
+  | "ghl_appuntamenti";
 
 // Riga della tab `config` — una per cliente
 export interface ConfigCliente {

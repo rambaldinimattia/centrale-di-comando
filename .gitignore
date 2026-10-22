@@ -4,6 +4,7 @@
 # build Next.js
 /.next
 /out
+*.tsbuildinfo
 
 # ambiente
 .env
