@@ -27,6 +27,13 @@ l'azione consigliata.
 
 ## 1) `pixel_capi` — Salute del tracciamento (Pixel / CAPI)
 
+> **Stato: in sospeso, da riprogettare.** La versione descritta qui sotto (volume
+> degli eventi lead da `/insights`) è già coperta da `volume_lead` e
+> `zero_lead_spesa`: il nodo `motore-confronto` legge già gli eventi
+> `onsite_web_lead` / `lead`. Il valore aggiunto vero sarebbe leggere il
+> **dataset** (`dataset_id`) per capire *quali* eventi arrivano: PageView sì e
+> Lead no → form rotto; nessun evento → pixel rimosso dalla landing.
+
 **Perché**: è la causa tecnica n.1 del vostro alert "zero lead con spesa". Se gli
 eventi non arrivano, state ottimizzando alla cieca.
 
@@ -71,6 +78,10 @@ alert_inviato: true
 ---
 
 ## 2) `erogazione` — Delivery / inserzione ferma (sottospesa)
+
+> **Stato: implementato** come CHECK 9 dentro il nodo `motore-confronto` (stessa
+> tecnica del CHECK 8 sullo stato account: chiamata a Meta dal codice, nessun
+> nodo nuovo). Codice completo versionato in [`n8n/motore-confronto.js`](../n8n/motore-confronto.js).
 
 **Perché**: l'altra metà di "zero lead con spesa". Oggi avvisate se spendete *sopra*
 il tetto, ma non se un'inserzione **ha smesso di erogare** (in pausa, in revisione,
