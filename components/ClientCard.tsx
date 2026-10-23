@@ -1,4 +1,11 @@
-import { COLORE_ESITO, checkLabel, formatEuro, formatNumero } from "@/lib/format";
+import {
+  COLORE_ESITO,
+  ESITO_BREVE,
+  checkLabel,
+  formatDurataAllarme,
+  formatEuro,
+  formatNumero,
+} from "@/lib/format";
 import type { ClienteDerivato, Esito } from "@/lib/types";
 import { Semaforo } from "./Semaforo";
 
@@ -33,7 +40,7 @@ export function ClientCard({ cliente, selezionato, onClick }: ClientCardProps) {
       </div>
 
       <p className="text-[0.82rem] text-taupe leading-snug mb-4 line-clamp-2 min-h-[2.4em]">
-        <ChipEsito esito={cliente.esito} />
+        <StatoDurata esito={cliente.esito} giorni={cliente.giorniAllarme} />
         {statoTesto}
       </p>
 
@@ -53,17 +60,18 @@ export function ClientCard({ cliente, selezionato, onClick }: ClientCardProps) {
   );
 }
 
-// Stato in forma testuale per gli screen reader: visivamente lo comunicano già
-// il pallino e il bordo colorati (che però sono aria-hidden), qui lo rendiamo
-// disponibile anche a chi usa un lettore di schermo. Nessuna resa visibile.
-const CHIP_LABEL: Record<Esito, string> = {
-  OK: "In salute",
-  WARNING: "Warning",
-  CRITICO: "Critico",
-};
-
-function ChipEsito({ esito }: { esito: Esito }) {
-  return <span className="sr-only">{CHIP_LABEL[esito]}</span>;
+// In allarme: "Critico da 4 giorni · " nel colore della gravità, prima dello
+// stato. In salute: nessuna resa visibile, solo l'etichetta per gli screen
+// reader (pallino e bordo, che comunicano lo stato, sono aria-hidden).
+function StatoDurata({ esito, giorni }: { esito: Esito; giorni: number | null }) {
+  if (esito === "OK" || giorni == null) {
+    return <span className="sr-only">{ESITO_BREVE[esito]} </span>;
+  }
+  return (
+    <span className="font-medium" style={{ color: COLORE_ESITO[esito] }}>
+      {ESITO_BREVE[esito]} {formatDurataAllarme(giorni)} ·{" "}
+    </span>
+  );
 }
 
 function MiniStat({ label, valore }: { label: string; valore: string }) {

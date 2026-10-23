@@ -120,6 +120,8 @@ export function deriveDashboard(
   const nomi = new Set<string>(config.map((c) => c.cliente.trim()));
 
   const clienti: ClienteDerivato[] = [];
+  // Durata degli alert ancora aperti, per cliente+check (usata dal feed)
+  const durataPerCheck = new Map<string, number>();
 
   for (const nome of nomi) {
     const cfg = configByName.get(nome) ?? null;
@@ -168,7 +170,7 @@ export function deriveDashboard(
     // stato del cliente. È il check CRM (ghl_lead), coi lead reali, a governare la
     // salute dei lead. Senza CRM, volume_lead conta come prima.
     const hasCrmLead = checks.some((c) => c.check === "ghl_lead");
-    const esitoEff = (c: CheckDerivato): Esito =>
+    const esitoEff = (c: { check: string; esito: Esito }): Esito =>
       hasCrmLead && c.check === "volume_lead" ? "OK" : c.esito;
 
     // Esito peggiore dell'ultimo giro (solo check freschi): il colore rispecchia
@@ -192,6 +194,38 @@ export function deriveDashboard(
         checks.find((c) => c.check === "volume_lead") ??
         checks.find((c) => c.check === "campagne_issues") ??
         checkPeggiore;
+    }
+
+    // Da quanti giorni il cliente è in allarme alla gravità attuale. Un giorno
+    // "conta" se il suo esito peggiore è almeno quello di oggi (critico da N
+    // giorni = critico per N giorni di fila). I giorni senza esecuzione non
+    // interrompono la serie; un giorno con esecuzione e tutto OK sì.
+    const giorniRun = giorniDiEsecuzione(righe);
+    const peggioreDelGiorno = new Map<string, Esito>();
+    for (const r of righe) {
+      const g = dayKey(r.timestamp);
+      peggioreDelGiorno.set(g, peggiore(peggioreDelGiorno.get(g) ?? "OK", esitoEff(r)));
+    }
+    const giorniAllarme =
+      esito === "OK"
+        ? null
+        : durataAllarme(giorniRun, (g) => RANK[peggioreDelGiorno.get(g) ?? "OK"] >= RANK[esito]);
+
+    // Stessa misura per ogni alert ancora aperto (check fresco e non OK), per il
+    // feed. Un check assente in un giorno di esecuzione vale OK: alcuni (es.
+    // zero_lead_spesa) scrivono una riga solo quando scattano.
+    for (const c of checks) {
+      if (c.esito === "OK" || !isFresh(c)) continue;
+      const delCheck = new Map<string, Esito>();
+      for (const r of righe) {
+        if (r.check !== c.check) continue;
+        const g = dayKey(r.timestamp);
+        delCheck.set(g, peggiore(delCheck.get(g) ?? "OK", r.esito));
+      }
+      durataPerCheck.set(
+        chiaveAlert(nome, c.check),
+        durataAllarme(giorniRun, (g) => RANK[delCheck.get(g) ?? "OK"] >= RANK[c.esito])
+      );
     }
 
     // Storico giornaliero (fino a 30 giorni) per grafico e aggregazioni
@@ -251,6 +285,7 @@ export function deriveDashboard(
       attivo: cfg ? cfg.attivo : true,
       config: cfg,
       esito,
+      giorniAllarme,
       ultimoTimestamp: ultimoTs,
       checks,
       checkPeggiore,
@@ -296,24 +331,36 @@ export function deriveDashboard(
 
   // Feed alert = righe con esito != OK, timestamp desc. Solo clienti in config:
   // gli alert storici di un cliente rimosso non devono restare nel feed.
+  // La durata ("da N giorni") va solo sulla riga più recente di un alert ancora
+  // aperto: le righe precedenti della stessa serie restano storia.
+  const conDurata = new Set<string>();
   const feed: AlertFeedItem[] = log
     .filter((r) => r.esito && r.esito !== "OK" && nomi.has(r.cliente?.trim()))
     .sort((a, b) => tsValue(b.timestamp) - tsValue(a.timestamp))
     .slice(0, 200)
-    .map((r) => ({
-      timestamp: r.timestamp,
-      cliente: r.cliente,
-      check: r.check,
-      esito: r.esito,
-      dettaglio: r.dettaglio,
-      alert_inviato: r.alert_inviato,
-      // Consiglio: quello scritto dalla Sentinella se presente, altrimenti il
-      // fallback del Consigliere in base al tipo di check.
-      azione_consigliata:
-        r.azione_consigliata && r.azione_consigliata.trim()
-          ? r.azione_consigliata
-          : consiglioPer(r.check, r.esito),
-    }));
+    .map((r) => {
+      const chiave = chiaveAlert(r.cliente.trim(), r.check);
+      let giorniAllarme: number | undefined;
+      if (!conDurata.has(chiave) && durataPerCheck.has(chiave)) {
+        conDurata.add(chiave);
+        giorniAllarme = durataPerCheck.get(chiave);
+      }
+      return {
+        timestamp: r.timestamp,
+        cliente: r.cliente,
+        check: r.check,
+        esito: r.esito,
+        dettaglio: r.dettaglio,
+        alert_inviato: r.alert_inviato,
+        // Consiglio: quello scritto dalla Sentinella se presente, altrimenti il
+        // fallback del Consigliere in base al tipo di check.
+        azione_consigliata:
+          r.azione_consigliata && r.azione_consigliata.trim()
+            ? r.azione_consigliata
+            : consiglioPer(r.check, r.esito),
+        giorniAllarme,
+      };
+    });
 
   return {
     clienti,
@@ -323,6 +370,34 @@ export function deriveDashboard(
     feed,
     fonte: opts.fonte,
   };
+}
+
+function chiaveAlert(cliente: string, check: string): string {
+  return `${cliente}|${check}`;
+}
+
+// Giorni (YYYY-MM-DD) in cui la Sentinella ha scritto almeno una riga per il
+// cliente, dal più recente al più vecchio.
+function giorniDiEsecuzione(righe: RigaLog[]): string[] {
+  return Array.from(new Set(righe.map((r) => dayKey(r.timestamp)))).sort().reverse();
+}
+
+// Durata in giorni di calendario della serie di giorni in allarme che termina
+// all'ultima esecuzione: 0 = solo oggi, 1 = da ieri, ecc. `giorniDesc` sono i
+// giorni di esecuzione (più recente per primo): un giorno senza esecuzione non
+// interrompe la serie, un giorno eseguito e non in allarme sì.
+export function durataAllarme(
+  giorniDesc: string[],
+  inAllarme: (giorno: string) => boolean
+): number {
+  if (giorniDesc.length === 0) return 0;
+  let inizio = giorniDesc[0];
+  for (const g of giorniDesc) {
+    if (!inAllarme(g)) break;
+    inizio = g;
+  }
+  const ms = Date.parse(`${giorniDesc[0]}T00:00:00Z`) - Date.parse(`${inizio}T00:00:00Z`);
+  return Math.round(ms / 86_400_000);
 }
 
 // Parsa il check ghl_automazioni: valore "attivi/bozze", nomi bozze dal dettaglio

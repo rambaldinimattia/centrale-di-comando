@@ -1,7 +1,7 @@
 "use client";
 
 import { parseTs } from "@/lib/derive";
-import { checkLabel, formatTimestamp } from "@/lib/format";
+import { checkLabel, formatDurataAllarme, formatTimestamp } from "@/lib/format";
 import type { AlertFeedItem } from "@/lib/types";
 import { useMemo, useState } from "react";
 
@@ -153,6 +153,14 @@ function AlertRow({ item }: { item: AlertFeedItem }) {
             <span className="text-[0.7rem] text-taupe-chiaro uppercase tracking-label">
               {checkLabel(item.check)}
             </span>
+            {item.giorniAllarme != null && (
+              <span
+                className="text-[0.7rem] uppercase tracking-label font-medium"
+                style={{ color: badge.bg }}
+              >
+                · aperto {formatDurataAllarme(item.giorniAllarme)}
+              </span>
+            )}
           </div>
           <p className="text-sm text-taupe mt-1 leading-snug">{item.dettaglio}</p>
         </div>

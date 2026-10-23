@@ -111,6 +111,9 @@ export interface ClienteDerivato {
   attivo: boolean;
   config: ConfigCliente | null;
   esito: Esito; // esito peggiore dell'ultima esecuzione
+  // Da quanti giorni di calendario il cliente è in allarme alla gravità attuale
+  // (0 = da oggi, 1 = da ieri…); null se è in salute.
+  giorniAllarme: number | null;
   ultimoTimestamp: string | null;
   checks: CheckDerivato[]; // check dell'ultima esecuzione
   checkPeggiore: CheckDerivato | null;
@@ -140,6 +143,8 @@ export interface AlertFeedItem {
   dettaglio: string;
   alert_inviato: boolean;
   azione_consigliata?: string;
+  // Solo sulla riga più recente di un alert ancora aperto: da quanti giorni dura
+  giorniAllarme?: number;
 }
 
 export interface DashboardData {

@@ -4,6 +4,7 @@ import {
   COLORE_ESITO,
   LABEL_ESITO,
   formatDecimale,
+  formatDurataAllarme,
   formatEuro,
   formatNumero,
 } from "@/lib/format";
@@ -94,6 +95,7 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
           <h2 className="cifra text-3xl text-inchiostro leading-none">{cliente.cliente}</h2>
           <p className="etichetta mt-1" style={{ color: colore }}>
             {LABEL_ESITO[cliente.esito]}
+            {cliente.giorniAllarme != null && ` · ${formatDurataAllarme(cliente.giorniAllarme)}`}
           </p>
         </div>
         {cliente.config?.ad_account_id && (

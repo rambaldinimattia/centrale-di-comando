@@ -93,6 +93,20 @@ export const COLORE_ESITO: Record<Esito, string> = {
   CRITICO: "#8E2A3C",
 };
 
+// Etichetta breve della gravità, da comporre con la durata ("Critico da 4 giorni")
+export const ESITO_BREVE: Record<Esito, string> = {
+  OK: "In salute",
+  WARNING: "Warning",
+  CRITICO: "Critico",
+};
+
+// Durata di un allarme: 0 → "da oggi", 1 → "da ieri", n → "da n giorni"
+export function formatDurataAllarme(giorni: number): string {
+  if (giorni <= 0) return "da oggi";
+  if (giorni === 1) return "da ieri";
+  return `da ${giorni} giorni`;
+}
+
 export const LABEL_ESITO: Record<Esito, string> = {
   OK: "In salute",
   WARNING: "Da monitorare",

@@ -187,6 +187,86 @@ describe("deriveDashboard · campagne con problemi", () => {
   });
 });
 
+describe("deriveDashboard · da quanti giorni in allarme", () => {
+  const G = (giorno: string) => `2026-09-${giorno} 08:00:00`;
+
+  it("cliente in salute: nessuna durata", () => {
+    const d = deriveDashboard([cfg("ACME")], [
+      riga({ check: "spesa_giorno", esito: "OK", timestamp: G("05") }),
+    ]);
+    expect(d.clienti[0].giorniAllarme).toBeNull();
+  });
+
+  it("critico solo oggi → 0 (da oggi)", () => {
+    const d = deriveDashboard([cfg("ACME")], [
+      riga({ check: "token", esito: "OK", timestamp: G("04") }),
+      riga({ check: "token", esito: "CRITICO", timestamp: G("05") }),
+    ]);
+    expect(d.clienti[0].giorniAllarme).toBe(0);
+  });
+
+  it("critico da tre giorni di fila → 2, interrotto da un giorno OK prima", () => {
+    const d = deriveDashboard([cfg("ACME")], [
+      riga({ check: "token", esito: "OK", timestamp: G("02") }),
+      riga({ check: "token", esito: "CRITICO", timestamp: G("03") }),
+      riga({ check: "token", esito: "CRITICO", timestamp: G("04") }),
+      riga({ check: "token", esito: "CRITICO", timestamp: G("05") }),
+    ]);
+    expect(d.clienti[0].giorniAllarme).toBe(2);
+  });
+
+  it("warning ieri, critico oggi → critico da oggi", () => {
+    const d = deriveDashboard([cfg("ACME")], [
+      riga({ check: "cpl", esito: "WARNING", timestamp: G("04") }),
+      riga({ check: "cpl", esito: "CRITICO", timestamp: G("05") }),
+    ]);
+    expect(d.clienti[0].esito).toBe("CRITICO");
+    expect(d.clienti[0].giorniAllarme).toBe(0);
+  });
+
+  it("critico ieri, warning oggi → warning da ieri (in allarme da 2 giorni)", () => {
+    const d = deriveDashboard([cfg("ACME")], [
+      riga({ check: "cpl", esito: "CRITICO", timestamp: G("04") }),
+      riga({ check: "cpl", esito: "WARNING", timestamp: G("05") }),
+    ]);
+    expect(d.clienti[0].esito).toBe("WARNING");
+    expect(d.clienti[0].giorniAllarme).toBe(1);
+  });
+
+  it("un giorno senza esecuzione non interrompe la serie (conta il calendario)", () => {
+    const d = deriveDashboard([cfg("ACME")], [
+      riga({ check: "token", esito: "CRITICO", timestamp: G("03") }),
+      // il 4 la Sentinella non ha girato
+      riga({ check: "token", esito: "CRITICO", timestamp: G("05") }),
+    ]);
+    expect(d.clienti[0].giorniAllarme).toBe(2);
+  });
+
+  it("un check che scrive solo quando scatta, assente in un giorno eseguito, interrompe la serie", () => {
+    const d = deriveDashboard([cfg("ACME")], [
+      riga({ check: "zero_lead_spesa", esito: "CRITICO", timestamp: G("03") }),
+      riga({ check: "spesa_giorno", esito: "OK", timestamp: G("04") }), // eseguito, nessun zero_lead
+      riga({ check: "spesa_giorno", esito: "OK", timestamp: G("05") }),
+      riga({ check: "zero_lead_spesa", esito: "CRITICO", timestamp: G("05") }),
+    ]);
+    expect(d.clienti[0].giorniAllarme).toBe(0);
+  });
+
+  it("nel feed la durata va solo sulla riga più recente dell'alert aperto", () => {
+    const d = deriveDashboard([cfg("ACME")], [
+      riga({ check: "token", esito: "CRITICO", timestamp: G("04") }),
+      riga({ check: "token", esito: "CRITICO", timestamp: G("05") }),
+      riga({ check: "cpl", esito: "WARNING", timestamp: G("02") }), // alert chiuso
+      riga({ check: "cpl", esito: "OK", timestamp: G("05") }),
+    ]);
+    const token = d.feed.filter((f) => f.check === "token");
+    expect(token[0].timestamp).toBe(G("05"));
+    expect(token[0].giorniAllarme).toBe(1);
+    expect(token[1].giorniAllarme).toBeUndefined();
+    expect(d.feed.find((f) => f.check === "cpl")!.giorniAllarme).toBeUndefined();
+  });
+});
+
 describe("deriveDashboard · ordinamento e contatori", () => {
   it("ordina i clienti attivi per gravità decrescente", () => {
     const config = [cfg("ALFA"), cfg("BETA"), cfg("GAMMA")];
