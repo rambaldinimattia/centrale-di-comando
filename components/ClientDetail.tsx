@@ -39,12 +39,24 @@ function fmtBaseline(n: number): string {
   return n % 1 === 0 ? formatNumero(n) : formatDecimale(n);
 }
 
+// Dettaglio del check campagne_issues senza il prefisso ridondante col titolo
+// della casella: "Campagne con problemi: X (motivo)" → "X (motivo)".
+function descriviProblemiCampagne(dettaglio: string): string {
+  return dettaglio.replace(/^\s*Campagne con problemi:\s*/i, "").trim() || dettaglio;
+}
+
 export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
   const [periodo, setPeriodo] = useState<Periodo>("24h");
 
   const colore = COLORE_ESITO[cliente.esito];
   const tetto = cliente.config?.spesa_max_giorno ?? null;
   const baselineLead = cliente.checks.find((c) => c.check === "volume_lead")?.baseline;
+
+  // Campagne: in allarme se la Sentinella ha segnalato problemi o "nessuna
+  // campagna attiva" (esito non OK anche con 0 problemi). In quel caso sotto il
+  // numero si mostra il dettaglio vero (nome campagna + problema).
+  const campagneRiga = cliente.checks.find((c) => c.check === "campagne_issues");
+  const campagneInAllarme = campagneRiga != null && campagneRiga.esito !== "OK";
 
   const storico = cliente.storico ?? [];
   // Finestra per grafico e aggregazioni: 30g mostra 30 punti, 24h/7g mostrano 7
@@ -160,11 +172,11 @@ export function ClientDetail({ cliente }: { cliente: ClienteDerivato }) {
           sotto={
             cliente.campagneProblemi == null
               ? "In attesa dalla Sentinella"
-              : cliente.campagneProblemi > 0
-                ? "Da verificare su Meta"
+              : campagneInAllarme
+                ? descriviProblemiCampagne(campagneRiga!.dettaglio)
                 : "Nessun problema di delivery"
           }
-          allarme={(cliente.campagneProblemi ?? 0) > 0}
+          allarme={campagneInAllarme || (cliente.campagneProblemi ?? 0) > 0}
           na={cliente.campagneProblemi == null}
         />
       </div>
@@ -422,8 +434,9 @@ function MetricCard({
         </p>
       )}
       <p
-        className="text-[0.72rem] text-taupe"
+        className="text-[0.72rem] text-taupe line-clamp-3"
         style={{ color: allarme && !na ? "#8E2A3C" : undefined }}
+        title={sotto}
       >
         {sotto}
       </p>
