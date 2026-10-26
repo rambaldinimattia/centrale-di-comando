@@ -88,9 +88,13 @@ for (let i = 0; i < items.length; i++) {
   }
 
   // CHECK 5: stato campagne e problemi delivery
-  // Contano solo le campagne ACCESE (ACTIVE, o accese ma con problemi WITH_ISSUES).
-  // Quelle spente da noi (PAUSED) si ignorano, anche se Meta le segnala con problemi.
-  const accese = campagne.filter(c => c.effective_status === 'ACTIVE' || c.effective_status === 'WITH_ISSUES');
+  // Contano solo le campagne ACCESE DA NOI: interruttore `status` = ACTIVE.
+  // Non basta effective_status: una campagna spenta da noi ma con un problema
+  // Meta risulta WITH_ISSUES, non PAUSED. Serve `status` nei fields della
+  // chiamata alle campagne; se mancasse, si ricade sul solo effective_status.
+  const accese = campagne.filter(c =>
+    (c.status === undefined || c.status === 'ACTIVE') &&
+    (c.effective_status === 'ACTIVE' || c.effective_status === 'WITH_ISSUES'));
   const conProblemi = accese.filter(c => c.effective_status === 'WITH_ISSUES' || (c.issues_info || []).length > 0);
   const valoreCamp = accese.length + '/' + conProblemi.length;
   if (accese.length === 0) {

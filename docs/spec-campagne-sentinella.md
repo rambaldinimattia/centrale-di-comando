@@ -29,25 +29,27 @@ Una campagna con problemi è un allarme **solo se è attiva**. Se l'abbiamo spen
 noi (o archiviata/eliminata), i suoi problemi non ci riguardano e **non vanno
 segnalati**.
 
-### Come è applicata: filtro nella chiamata a Meta
+### Come è applicata
 
-Il nodo HTTP che legge le campagne usa il parametro `filtering` per decidere
-quali campagne farsi restituire. Il filtro deve includere **solo** le campagne
-accese:
+**Attenzione: `effective_status` da solo non basta.** Una campagna spenta da noi
+ma con un problema Meta (es. "account compromesso") risulta `WITH_ISSUES`, non
+`PAUSED`: filtrando solo su `effective_status` passerebbe come accesa (caso
+Evanite Castenedolo, "ricerca personale - Copia"). Serve l'interruttore
+impostato da noi, il campo `status`.
 
-```
-fields    = name,effective_status,issues_info
-filtering = [{"field":"effective_status","operator":"IN","value":["ACTIVE","WITH_ISSUES"]}]
-```
+1. **Nodo HTTP delle campagne** — chiedere anche `status`:
+   ```
+   fields    = name,status,effective_status,issues_info
+   filtering = [{"field":"effective_status","operator":"IN","value":["ACTIVE","WITH_ISSUES"]}]
+   ```
+2. **Nodo `motore-confronto`, CHECK 5** — sono accese solo le campagne con
+   `status = ACTIVE` **e** `effective_status` in `ACTIVE`/`WITH_ISSUES`.
+   Se `status` mancasse nella risposta, si ricade sul solo `effective_status`
+   (comportamento precedente, nessuna rottura). Codice in
+   [`n8n/motore-confronto.js`](../n8n/motore-confronto.js).
 
-- `ACTIVE` → campagna accesa e regolare
-- `WITH_ISSUES` → campagna accesa ma con problemi (è quella da segnalare)
-- `PAUSED` **non va incluso**: sono le campagne spente da noi. Prima era nel
-  filtro, e così una campagna spenta con problemi segnalati da Meta finiva nel
-  conteggio e colorava il cliente di rosso (caso Evanite Castenedolo).
-
-Il nodo `motore-confronto` non va toccato: conta i problemi sulle campagne che
-riceve, e con questo filtro riceve solo quelle accese.
+Resta CRITICO "Nessuna campagna attiva sull'account" quando nessuna campagna è
+accesa (anche se le abbiamo spente tutte noi): è voluto.
 
 ## In dashboard
 
