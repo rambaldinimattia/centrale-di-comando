@@ -22,7 +22,7 @@ const normalizza = (s) => String(s || '').toLowerCase().replace(/[{}]/g, '').tri
 const cacheCampi = {};
 async function campiPersonalizzati(ctx, cfg) {
   const location = cfg.ghl_location_id;
-  const token = cfg.ghl_token || cfg.ghl_api_key || cfg.ghl_access_token || cfg.token;
+  const token = cfg.ghl_token; // stesso token del nodo HTTP dei contatti
   if (!location || !token) return null;
   if (!(location in cacheCampi)) {
     try {
