@@ -22,7 +22,10 @@ export type CheckTipo =
   | "ghl_contatti"
   | "ghl_automazioni"
   | "ghl_opportunita"
-  | "ghl_appuntamenti";
+  | "ghl_appuntamenti"
+  | "ghl_completezza" // lead dal form con campi obbligatori vuoti (mappatura rotta)
+  // n8n
+  | "n8n_errori"; // esecuzioni fallite dei workflow del cliente
 
 // Riga della tab `config` — una per cliente
 export interface ConfigCliente {

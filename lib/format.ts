@@ -80,6 +80,8 @@ const CHECK_LABEL: Record<string, string> = {
   ghl_automazioni: "Automazioni CRM",
   ghl_opportunita: "Opportunità CRM",
   ghl_appuntamenti: "Appuntamenti CRM",
+  ghl_completezza: "Dati dei lead",
+  n8n_errori: "Errori automazioni",
 };
 
 export function checkLabel(check: string): string {
