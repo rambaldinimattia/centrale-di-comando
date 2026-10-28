@@ -80,7 +80,10 @@ async function readTab(sheetId: string, tab: string): Promise<string[][]> {
   const sheets = getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: sheetId,
-    range: `${tab}!A1:Z10000`,
+    // Colonne intere, senza limite di righe: il log è append-only e cresce di
+    // ~150 righe al giorno. Un tetto fisso (prima A1:Z10000) faceva sparire le
+    // righe nuove una volta superato, bloccando la dashboard all'ultima letta.
+    range: `${tab}!A:Z`,
     valueRenderOption: "UNFORMATTED_VALUE",
     // SERIAL_NUMBER (non FORMATTED_STRING): se Google Sheets auto-formatta una
     // cella numerica come data (es. il valore 1 di volume_lead diventa "31/12"),
