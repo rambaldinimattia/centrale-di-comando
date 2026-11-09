@@ -28,7 +28,7 @@ export function GroupCard({ nome, membri, esito, aperto, onClick }: GroupCardPro
     <button
       onClick={onClick}
       aria-expanded={aperto}
-      className="text-left w-full bg-card border border-bordo p-5 transizione hover:border-taupe-chiaro focus:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux"
+      className="text-left w-full h-full bg-card border border-bordo p-5 transizione hover:border-taupe-chiaro hover:-translate-y-0.5 hover:shadow-[0_14px_28px_-20px_rgba(44,36,32,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux"
       style={{
         borderRadius: 0,
         borderLeft: `3px solid ${colore}`,

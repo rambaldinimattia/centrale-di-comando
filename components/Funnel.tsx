@@ -1,5 +1,9 @@
+"use client";
+
 import { formatEuro, formatNumero } from "@/lib/format";
+import { gsap, useGSAP } from "@/lib/gsap";
 import type { ClienteDerivato, PuntoStorico } from "@/lib/types";
+import { useRef } from "react";
 
 // ─────────────────────────────────────────────────────────────
 // Funnel end-to-end (ultimi 7 giorni): Spesa → Lead → Appuntamenti.
@@ -30,6 +34,22 @@ interface Rottura {
 }
 
 export function Funnel({ cliente }: { cliente: ClienteDerivato }) {
+  // Nodi e frecce entrano in sequenza, a ogni cambio di cliente
+  const radice = useRef<HTMLDivElement>(null);
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+        tl.from(".cdc-nodo", { autoAlpha: 0, y: 10, duration: 0.45, stagger: 0.12 });
+        tl.from(".cdc-freccia", { autoAlpha: 0, x: -6, duration: 0.35, stagger: 0.12 }, 0.2);
+        tl.from(".cdc-rottura", { autoAlpha: 0, y: 6, duration: 0.4 }, "-=0.1");
+      });
+      return () => mm.revert();
+    },
+    { scope: radice, dependencies: [cliente.cliente], revertOnUpdate: true }
+  );
+
   const storico7 = (cliente.storico ?? []).slice(-7);
   const spesa7 = somma(storico7, "spesa");
   const metaLead7 = somma(storico7, "lead");
@@ -99,7 +119,7 @@ export function Funnel({ cliente }: { cliente: ClienteDerivato }) {
   }
 
   return (
-    <div className="px-6 py-5 border-t border-bordo">
+    <div ref={radice} className="px-6 py-5 border-t border-bordo">
       <div className="flex items-baseline justify-between gap-3 flex-wrap mb-4">
         <p className="etichetta text-taupe">Funnel · ultimi 7 giorni</p>
         {!rottura && (
@@ -128,7 +148,7 @@ export function Funnel({ cliente }: { cliente: ClienteDerivato }) {
 
       {rottura && (
         <div
-          className="mt-3 pl-3 py-2"
+          className="cdc-rottura mt-3 pl-3 py-2"
           style={{ borderLeft: `2px solid ${rottura.gravita === "CRITICO" ? CRITICO : WARNING}` }}
         >
           <p
@@ -154,7 +174,7 @@ interface NodoProps {
 function Nodo({ label, valore, sub, tenue }: NodoProps) {
   return (
     <div
-      className="flex-1 min-w-0 bg-panel px-4 py-3 text-center"
+      className="cdc-nodo flex-1 min-w-0 bg-panel px-4 py-3 text-center"
       style={{ borderTop: `2px solid ${tenue ? "#DDD5C4" : BORDEAUX}` }}
     >
       <p className="etichetta text-taupe mb-1 text-[0.6rem]">{label}</p>
@@ -174,7 +194,7 @@ interface FrecciaProps {
 function Freccia({ etichetta, evidenzia }: FrecciaProps) {
   const colore = evidenzia === "CRITICO" ? CRITICO : evidenzia === "WARNING" ? WARNING : "#8A7E6D";
   return (
-    <div className="flex sm:flex-col items-center justify-center gap-1 px-1 shrink-0">
+    <div className="cdc-freccia flex sm:flex-col items-center justify-center gap-1 px-1 shrink-0">
       {/* Freccia: giù su mobile, destra su desktop */}
       <svg
         className="rotate-90 sm:rotate-0"

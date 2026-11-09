@@ -1,5 +1,6 @@
 import { formatTimestamp } from "@/lib/format";
 import { RefreshButton } from "./RefreshButton";
+import { StatoSentinella } from "./StatoSentinella";
 
 interface HeaderProps {
   ultimaEsecuzione: string | null;
@@ -23,6 +24,7 @@ export function Header({ ultimaEsecuzione, nCritici, nWarning, fonte }: HeaderPr
 
       <div className="mt-5 flex items-center justify-between gap-4 flex-wrap">
         <p className="text-sm text-taupe">
+          <StatoSentinella ultimaEsecuzione={ultimaEsecuzione} />
           Ultima esecuzione Sentinella:{" "}
           <span className="text-inchiostro font-medium">
             {formatTimestamp(ultimaEsecuzione)}

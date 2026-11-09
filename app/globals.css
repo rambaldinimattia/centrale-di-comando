@@ -51,6 +51,18 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   .transizione {
     transition: background-color 0.15s ease, border-color 0.15s ease,
-      transform 0.15s ease;
+      transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  /* "Respiro" lento di un pallino di stato: guida lo sguardo su ciò che
+     richiede attenzione (critici, Sentinella attiva). Colore da --cdc-pulse
+     come terna RGB. Con riduci-movimento resta fermo. */
+  .cdc-pulse {
+    animation: cdc-respiro 2.6s ease-out infinite;
+  }
+  @keyframes cdc-respiro {
+    0% { box-shadow: 0 0 0 0 rgba(var(--cdc-pulse), 0.45); }
+    70% { box-shadow: 0 0 0 7px rgba(var(--cdc-pulse), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--cdc-pulse), 0); }
   }
 }

@@ -99,6 +99,42 @@ export function Dashboard({ data }: { data: DashboardResult }) {
     { scope: gridRef }
   );
 
+  // Sedi di una catena: entrano a cascata quando apri la catena
+  const sediRef = useRef<HTMLDivElement>(null);
+  useGSAP(
+    () => {
+      const sedi = sediRef.current;
+      if (!sedi) return;
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.from(Array.from(sedi.children), {
+          autoAlpha: 0,
+          y: 10,
+          duration: 0.4,
+          ease: "power2.out",
+          stagger: 0.04,
+        });
+      });
+      return () => mm.revert();
+    },
+    { dependencies: [gruppoAperto], revertOnUpdate: true }
+  );
+
+  // Dettaglio: dissolvenza morbida quando cambi cliente
+  const dettaglioAnimRef = useRef<HTMLDivElement>(null);
+  useGSAP(
+    () => {
+      const el = dettaglioAnimRef.current;
+      if (!el) return;
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.from(el, { autoAlpha: 0, y: 8, duration: 0.4, ease: "power2.out" });
+      });
+      return () => mm.revert();
+    },
+    { dependencies: [clienteSelezionato?.cliente], revertOnUpdate: true }
+  );
+
   // Al click su una card, porta in vista il dettaglio (utile soprattutto su
   // mobile, dov'è più in basso). Salta il primo render (selezione di default).
   const dettaglioRef = useRef<HTMLElement>(null);
@@ -140,27 +176,28 @@ export function Dashboard({ data }: { data: DashboardResult }) {
           ref={gridRef}
           className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
         >
-          {blocchi.map((b) =>
-            b.gruppo ? (
-              <GroupCard
-                key={b.key}
-                nome={etichettaGruppo(b.key)}
-                membri={b.membri}
-                esito={b.esito}
-                aperto={gruppoAperto === b.key}
-                onClick={() =>
-                  setGruppoAperto((g) => (g === b.key ? null : b.key))
-                }
-              />
-            ) : (
-              <ClientCard
-                key={b.key}
-                cliente={b.membri[0]}
-                selezionato={clienteSelezionato?.cliente === b.membri[0].cliente}
-                onClick={() => setSelezionato(b.membri[0].cliente)}
-              />
-            )
-          )}
+          {/* Ogni card sta in un contenitore: l'ingresso animato muove il
+              contenitore, il sollevamento al passaggio del mouse muove la card.
+              Mai due sistemi sulla stessa proprietà dello stesso elemento. */}
+          {blocchi.map((b) => (
+            <div key={b.key} className="h-full">
+              {b.gruppo ? (
+                <GroupCard
+                  nome={etichettaGruppo(b.key)}
+                  membri={b.membri}
+                  esito={b.esito}
+                  aperto={gruppoAperto === b.key}
+                  onClick={() => setGruppoAperto((g) => (g === b.key ? null : b.key))}
+                />
+              ) : (
+                <ClientCard
+                  cliente={b.membri[0]}
+                  selezionato={clienteSelezionato?.cliente === b.membri[0].cliente}
+                  onClick={() => setSelezionato(b.membri[0].cliente)}
+                />
+              )}
+            </div>
+          ))}
         </div>
       </section>
 
@@ -170,14 +207,15 @@ export function Dashboard({ data }: { data: DashboardResult }) {
           <h2 className="etichetta text-taupe mb-4">
             Sedi · {etichettaGruppo(bloccoAperto.key)}
           </h2>
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div ref={sediRef} className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {bloccoAperto.membri.map((m) => (
-              <ClientCard
-                key={m.cliente}
-                cliente={m}
-                selezionato={clienteSelezionato?.cliente === m.cliente}
-                onClick={() => setSelezionato(m.cliente)}
-              />
+              <div key={m.cliente} className="h-full">
+                <ClientCard
+                  cliente={m}
+                  selezionato={clienteSelezionato?.cliente === m.cliente}
+                  onClick={() => setSelezionato(m.cliente)}
+                />
+              </div>
             ))}
           </div>
         </section>
@@ -186,7 +224,9 @@ export function Dashboard({ data }: { data: DashboardResult }) {
       {/* Dettaglio cliente selezionato */}
       {clienteSelezionato && (
         <section ref={dettaglioRef} className="mb-10 scroll-mt-6">
-          <ClientDetail cliente={clienteSelezionato} />
+          <div ref={dettaglioAnimRef}>
+            <ClientDetail cliente={clienteSelezionato} />
+          </div>
         </section>
       )}
 
